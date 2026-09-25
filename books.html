@@ -69,54 +69,104 @@
 </div>
 
 <div class="modal-backdrop" id="bookModal" aria-hidden="true">
-  <div class="book-modal" role="dialog" aria-modal="true" aria-labelledby="bookModalTitle">
+  <div class="book-modal book-modal-large" role="dialog" aria-modal="true" aria-labelledby="bookModalTitle">
     <div class="modal-head">
       <div>
         <div class="modal-kicker">Новая книга</div>
-        <h2 id="bookModalTitle">Добавить на полку</h2>
+        <h2 id="bookModalTitle">Добавить книгу</h2>
       </div>
       <button class="modal-close" id="modalClose" type="button" aria-label="Закрыть">×</button>
     </div>
 
-    <form id="bookForm">
-      <label class="field">
-        <span>Название</span>
-        <input id="bookTitle" type="text" placeholder="Название книги" required>
-      </label>
+    <form id="bookForm" class="book-form">
+      <div class="book-form-grid">
+        <section class="cover-column">
+          <div class="section-label">Обложка</div>
+          <label class="cover-upload-zone" for="bookCover">
+            <input id="bookCover" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <div class="cover-preview" id="coverPreview">＋</div>
+            <strong>Загрузить обложку</strong>
+            <span>Вертикальный формат · JPG, PNG, WEBP</span>
+          </label>
+        </section>
 
-      <div class="two-fields">
-        <label class="field">
-          <span>Автор</span>
-          <input id="bookAuthor" type="text" value="Дим Саныч" placeholder="Автор">
-        </label>
+        <section class="book-fields">
+          <label class="field full">
+            <span>Название</span>
+            <input id="bookTitle" type="text" placeholder="Название книги" required>
+          </label>
 
-        <label class="field">
-          <span>Год</span>
-          <input id="bookYear" type="number" min="1900" max="2100" placeholder="2026">
-        </label>
-      </div>
+          <div class="background-settings">
+            <div>
+              <span class="section-label">Фоновые изображения</span>
+              <label class="background-upload-zone" for="bookBackgrounds">
+                <input id="bookBackgrounds" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+                <div class="background-preview-strip" id="backgroundPreviewStrip">
+                  <div class="background-preview-placeholder"></div>
+                </div>
+                <div>
+                  <strong>Добавить изображения</strong>
+                  <span>Горизонтальный формат · можно выбрать несколько файлов</span>
+                </div>
+              </label>
+            </div>
+            <label class="field">
+              <span>Время смены фонового изображения</span>
+              <div class="duration-field">
+                <input id="backgroundInterval" type="number" min="1" value="10">
+                <span>сек.</span>
+              </div>
+            </label>
+          </div>
 
-      <label class="field">
-        <span>Короткое описание</span>
-        <textarea id="bookDescription" placeholder="Несколько строк о книге"></textarea>
-      </label>
+          <label class="field full">
+            <span>Описание</span>
+            <textarea id="bookDescription" placeholder="Описание книги"></textarea>
+          </label>
 
-      <label class="field">
-        <span>Доступ</span>
-        <select id="bookVisibility">
-          <option value="public">Публичная</option>
-          <option value="restricted">По персональному доступу</option>
-        </select>
-      </label>
+          <div class="upload-grid">
+            <div>
+              <span class="section-label">Электронная книга</span>
+              <label class="file-upload-zone" for="ebookFile">
+                <input id="ebookFile" type="file" accept=".epub,.pdf,.fb2,.mobi,.azw3,.docx" hidden>
+                <span class="upload-icon">⇧</span>
+                <span class="upload-copy"><strong>Загрузить файл</strong><small id="ebookFileName">EPUB, PDF, FB2, MOBI, AZW3, DOCX</small></span>
+              </label>
+            </div>
 
-      <div class="cover-picker">
-        <span>Обложка</span>
-        <div class="cover-options" id="coverOptions">
-          <button class="cover-choice active" type="button" data-cover="mist" aria-label="Светло-голубая"></button>
-          <button class="cover-choice" type="button" data-cover="graphite" aria-label="Графитовая"></button>
-          <button class="cover-choice" type="button" data-cover="sand" aria-label="Песочная"></button>
-          <button class="cover-choice" type="button" data-cover="lavender" aria-label="Лавандовая"></button>
-        </div>
+            <div>
+              <span class="section-label">Аудиокнига</span>
+              <label class="file-upload-zone" for="audiobookFile">
+                <input id="audiobookFile" type="file" accept=".mp3,.m4b,.aac,.flac,.zip,audio/*" hidden>
+                <span class="upload-icon">♪</span>
+                <span class="upload-copy"><strong>Загрузить аудио</strong><small id="audiobookFileName">MP3, M4B, AAC, FLAC, ZIP</small></span>
+              </label>
+            </div>
+
+            <div>
+              <span class="section-label">Трейлер книги</span>
+              <label class="file-upload-zone" for="trailerFile">
+                <input id="trailerFile" type="file" accept=".mp4,.webm,.mov,video/*" hidden>
+                <span class="upload-icon">▶</span>
+                <span class="upload-copy"><strong>Загрузить видео</strong><small id="trailerFileName">MP4, WEBM, MOV</small></span>
+              </label>
+            </div>
+
+            <div>
+              <span class="section-label">Цена</span>
+              <div class="price-grid">
+                <label class="field price-field">
+                  <span>Электронная книга</span>
+                  <div class="price-input"><input id="ebookPrice" type="number" min="0" step="1" placeholder="0"><span>₽</span></div>
+                </label>
+                <label class="field price-field">
+                  <span>Аудиокнига</span>
+                  <div class="price-input"><input id="audiobookPrice" type="number" min="0" step="1" placeholder="0"><span>₽</span></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
       <div class="modal-actions">
