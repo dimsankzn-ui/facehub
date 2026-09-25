@@ -15,4 +15,6 @@ document.querySelectorAll('.side button[data-admin]').forEach(b=>b.addEventListe
 const requestedView = new URLSearchParams(location.search).get('view');
 if (requestedView === 'admin' && sessionStorage.getItem('facehubDemoRole') === 'owner') {
   showView('admin');
+} else if (['music','poetry','blog'].includes(requestedView)) {
+  showView(requestedView);
 }
