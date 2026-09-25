@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Вход — Дим Саныч</title>
+<link rel="stylesheet" href="assets/css/auth.css">
+</head>
+<body>
+<div class="auth-app">
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient-ring ring-one"></div>
+    <div class="ambient-ring ring-two"></div>
+    <div class="ambient-prism"></div>
+    <div class="ambient-line"></div>
+  </div>
+
+  <header class="auth-header">
+    <a class="brand" href="index.html" aria-label="На главную">
+      <span class="logo">ДС</span>
+      <span>Дим Саныч</span>
+    </a>
+    <a class="back-link" href="index.html">← На главную</a>
+  </header>
+
+  <main class="auth-layout">
+    <section class="intro">
+      <div class="intro-kicker"><i></i> личное пространство</div>
+      <h1>Ваш доступ<br>к личному архиву.</h1>
+      <p>Войдите, чтобы открыть подаренные вам материалы, или создайте аккаунт для получения персонального доступа.</p>
+      <div class="intro-meta">
+        <span>Без рекламы</span>
+        <span>Персональный доступ</span>
+        <span>Только нужные данные</span>
+      </div>
+    </section>
+
+    <section class="auth-card" aria-label="Авторизация">
+      <div class="tabs" role="tablist">
+        <button class="tab active" type="button" data-tab="login" role="tab" aria-selected="true">Вход</button>
+        <button class="tab" type="button" data-tab="register" role="tab" aria-selected="false">Регистрация</button>
+      </div>
+
+      <div class="form-view active" id="form-login">
+        <div class="form-heading">
+          <h2>С возвращением</h2>
+          <p>Введите данные своей учётной записи.</p>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <label class="field">
+            <span>Электронная почта</span>
+            <input id="loginEmail" type="email" autocomplete="email" placeholder="name@example.ru" required>
+          </label>
+
+          <label class="field">
+            <span>Пароль</span>
+            <div class="password-field">
+              <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Введите пароль" required>
+              <button class="password-toggle" type="button" data-target="loginPassword" aria-label="Показать пароль">Показать</button>
+            </div>
+          </label>
+
+          <div class="form-row">
+            <label class="remember"><input type="checkbox"> <span>Запомнить меня</span></label>
+            <button class="text-button" type="button" id="forgotButton">Забыли пароль?</button>
+          </div>
+
+          <button class="submit-button" type="submit">Войти</button>
+          <div class="form-message" id="loginMessage" aria-live="polite"></div>
+        </form>
+
+        <p class="switch-copy">Нет аккаунта? <button type="button" data-switch="register">Зарегистрироваться</button></p>
+      </div>
+
+      <div class="form-view" id="form-register">
+        <div class="form-heading compact">
+          <h2>Создать аккаунт</h2>
+          <p>Аккаунт нужен для персонального доступа к закрытым материалам.</p>
+        </div>
+
+        <form id="registerForm" novalidate>
+          <div class="two-fields">
+            <label class="field">
+              <span>Имя</span>
+              <input id="registerName" type="text" autocomplete="name" placeholder="Как к вам обращаться" required>
+            </label>
+
+            <label class="field">
+              <span>Электронная почта</span>
+              <input id="registerEmail" type="email" autocomplete="email" placeholder="name@example.ru" required>
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Пароль</span>
+            <div class="password-field">
+              <input id="registerPassword" type="password" autocomplete="new-password" placeholder="Не менее 10 символов" minlength="10" required>
+              <button class="password-toggle" type="button" data-target="registerPassword" aria-label="Показать пароль">Показать</button>
+            </div>
+          </label>
+
+          <label class="field">
+            <span>Повторите пароль</span>
+            <input id="registerPasswordRepeat" type="password" autocomplete="new-password" placeholder="Повторите пароль" minlength="10" required>
+          </label>
+
+          <label class="consent">
+            <input id="personalDataConsent" type="checkbox" required>
+            <span>Я отдельно даю <button class="inline-link" type="button" id="consentOpen">согласие на обработку персональных данных</button> для регистрации и предоставления доступа.</span>
+          </label>
+
+          <button class="submit-button" type="submit">Создать аккаунт</button>
+          <div class="form-message" id="registerMessage" aria-live="polite"></div>
+        </form>
+
+        <p class="switch-copy">Уже есть аккаунт? <button type="button" data-switch="login">Войти</button></p>
+      </div>
+
+      <div class="demo-note">Сейчас это интерфейс прототипа. Реальная авторизация будет подключена к серверу и базе данных.</div>
+    </section>
+  </main>
+</div>
+
+<div class="dialog-backdrop" id="consentDialog" aria-hidden="true">
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+    <div>
+      <div class="dialog-kicker">Отдельный документ</div>
+      <h2 id="consentTitle">Согласие на обработку персональных данных</h2>
+    </div>
+    <div class="dialog-copy">
+      <p>В рабочей версии здесь будет размещён полный текст согласия с реальными сведениями об операторе, целями и составом обрабатываемых данных, сроками хранения и порядком отзыва.</p>
+      <p>Факт согласия, версия документа и дата подтверждения должны сохраняться отдельно от данных регистрации.</p>
+    </div>
+    <button class="submit-button" type="button" id="consentClose">Понятно</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/auth.js" defer></script>
+</body>
+</html>
