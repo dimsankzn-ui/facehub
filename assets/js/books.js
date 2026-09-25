@@ -55,7 +55,7 @@ function renderBooks() {
     item.querySelector('.book-year').textContent = '';
 
     item.addEventListener('click', () => {
-      toast(book.title + (book.visibility === 'restricted' ? ' · закрытый доступ' : ''));
+      location.href = 'book.html?id=' + encodeURIComponent(book.id);
     });
 
     row.appendChild(item);
