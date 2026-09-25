@@ -1,6 +1,10 @@
 const $ = (selector) => document.querySelector(selector);
 
 function switchTab(name) {
+  const app = document.querySelector('.auth-app');
+  const card = document.querySelector('.auth-card');
+  const first = card.getBoundingClientRect();
+
   document.querySelectorAll('.tab').forEach((tab) => {
     const active = tab.dataset.tab === name;
     tab.classList.toggle('active', active);
@@ -9,6 +13,33 @@ function switchTab(name) {
 
   document.querySelectorAll('.form-view').forEach((view) => {
     view.classList.toggle('active', view.id === 'form-' + name);
+  });
+
+  app.classList.toggle('register-mode', name === 'register');
+
+  requestAnimationFrame(() => {
+    const last = card.getBoundingClientRect();
+    const dx = first.left - last.left;
+    const dy = first.top - last.top;
+    const sx = first.width / last.width;
+    const sy = first.height / last.height;
+
+    card.animate(
+      [
+        {
+          transform: `translate(${dx}px,${dy}px) scale(${sx},${sy})`,
+          transformOrigin: 'top left'
+        },
+        {
+          transform: 'translate(0,0) scale(1,1)',
+          transformOrigin: 'top left'
+        }
+      ],
+      {
+        duration: 520,
+        easing: 'cubic-bezier(.2,.8,.2,1)'
+      }
+    );
   });
 }
 
