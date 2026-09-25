@@ -23,7 +23,6 @@ button{cursor:pointer}
 .page-nav{display:flex;gap:5px;padding:5px;border:1px solid rgba(255,255,255,.88);background:rgba(255,255,255,.46);backdrop-filter:blur(20px);border-radius:15px}
 .page-nav a{text-decoration:none;color:#687687;font-size:13px;padding:8px 11px;border-radius:10px}
 .page-nav a.active{background:rgba(255,255,255,.88);color:#223244}
-.header-actions{display:flex;gap:8px;align-items:center}
 .account-link,.admin-button{height:38px;border-radius:12px;padding:0 14px;font-size:12px;text-decoration:none;align-items:center}
 .account-link{display:inline-flex;color:#617184;background:rgba(255,255,255,.56);border:1px solid rgba(255,255,255,.9)}
 .admin-button{display:none;border:1px solid rgba(255,255,255,.9)}
@@ -36,7 +35,9 @@ body.is-owner .admin-button{display:inline-flex}
 .eyebrow i{width:6px;height:6px;border-radius:50%;background:#8ea7c2}
 h1{font-size:66px;line-height:.9;letter-spacing:-.064em;font-weight:250;margin:12px 0 10px}
 .hero p{margin:0;color:#687583;font-size:14px;line-height:1.45;max-width:560px}
-.hero-meta{color:#82909d;font-size:11px;padding-bottom:3px}
+.hero-side{display:flex;flex-direction:column;align-items:flex-end;gap:8px;padding-bottom:3px}
+.hero-meta{color:#82909d;font-size:11px}
+.hero-admin-actions{display:flex;gap:8px;min-height:38px}
 .library{min-height:0;display:grid;grid-template-columns:.95fr 1.45fr;gap:16px}
 .section{min-height:0;position:relative;border:1px solid rgba(255,255,255,.9);background:rgba(255,255,255,.5);backdrop-filter:blur(22px);border-radius:24px;padding:14px;box-shadow:0 18px 55px rgba(51,73,98,.05);overflow:hidden}
 .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px}
