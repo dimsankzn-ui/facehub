@@ -1,6 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 const STORAGE_KEY = 'facehubDemoBooks';
-let selectedCover = 'mist';
+
 
 function getBooks() {
   try {
@@ -38,12 +38,10 @@ function renderBooks() {
 
   books.forEach((book) => {
     const item = document.createElement('article');
-    item.className = 'book ' + (book.cover || 'mist');
-    item.title = [book.title, book.author, book.year].filter(Boolean).join(' · ');
+    item.className = 'book mist';
+    item.title = book.title;
 
-    const lock = book.visibility === 'restricted'
-      ? '<span class="book-lock" title="По персональному доступу">◌</span>'
-      : '';
+    const lock = '';
 
     item.innerHTML = `
       ${lock}
@@ -54,7 +52,7 @@ function renderBooks() {
     `;
 
     item.querySelector('.book-title').textContent = book.title;
-    item.querySelector('.book-year').textContent = book.year || '';
+    item.querySelector('.book-year').textContent = '';
 
     item.addEventListener('click', () => {
       toast(book.title + (book.visibility === 'restricted' ? ' · закрытый доступ' : ''));
@@ -75,11 +73,13 @@ function closeModal() {
   $('#bookModal').classList.remove('show');
   $('#bookModal').setAttribute('aria-hidden', 'true');
   $('#bookForm').reset();
-  $('#bookAuthor').value = 'Дим Саныч';
-  selectedCover = 'mist';
-  document.querySelectorAll('.cover-choice').forEach((button) => {
-    button.classList.toggle('active', button.dataset.cover === selectedCover);
-  });
+  $('#backgroundInterval').value = '10';
+  $('#coverPreview').style.backgroundImage = '';
+  $('#coverPreview').textContent = '＋';
+  $('#backgroundPreviewStrip').innerHTML = '<div class="background-preview-placeholder"></div>';
+  $('#ebookFileName').textContent = 'EPUB, PDF, FB2, MOBI, AZW3, DOCX';
+  $('#audiobookFileName').textContent = 'MP3, M4B, AAC, FLAC, ZIP';
+  $('#trailerFileName').textContent = 'MP4, WEBM, MOV';
 }
 
 function toast(message) {
@@ -102,15 +102,6 @@ $('#bookModal').addEventListener('click', (event) => {
   if (event.target.id === 'bookModal') closeModal();
 });
 
-document.querySelectorAll('.cover-choice').forEach((button) => {
-  button.addEventListener('click', () => {
-    selectedCover = button.dataset.cover;
-    document.querySelectorAll('.cover-choice').forEach((item) => {
-      item.classList.toggle('active', item === button);
-    });
-  });
-});
-
 $('#bookForm').addEventListener('submit', (event) => {
   event.preventDefault();
 
@@ -123,11 +114,15 @@ $('#bookForm').addEventListener('submit', (event) => {
   books.push({
     id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
     title,
-    author: $('#bookAuthor').value.trim(),
-    year: $('#bookYear').value.trim(),
     description: $('#bookDescription').value.trim(),
-    visibility: $('#bookVisibility').value,
-    cover: selectedCover
+    backgroundInterval: Number($('#backgroundInterval').value || 10),
+    ebookPrice: Number($('#ebookPrice').value || 0),
+    audiobookPrice: Number($('#audiobookPrice').value || 0),
+    coverFileName: $('#bookCover').files[0]?.name || '',
+    backgroundFileNames: Array.from($('#bookBackgrounds').files || []).map(file => file.name),
+    ebookFileName: $('#ebookFile').files[0]?.name || '',
+    audiobookFileName: $('#audiobookFile').files[0]?.name || '',
+    trailerFileName: $('#trailerFile').files[0]?.name || ''
   });
 
   saveBooks(books);
@@ -137,3 +132,39 @@ $('#bookForm').addEventListener('submit', (event) => {
 });
 
 renderBooks();
+
+function bindFileName(inputId, outputId, fallback) {
+  const input = $('#' + inputId);
+  input.addEventListener('change', () => {
+    const file = input.files && input.files[0];
+    $('#' + outputId).textContent = file ? file.name : fallback;
+  });
+}
+
+bindFileName('ebookFile', 'ebookFileName', 'EPUB, PDF, FB2, MOBI, AZW3, DOCX');
+bindFileName('audiobookFile', 'audiobookFileName', 'MP3, M4B, AAC, FLAC, ZIP');
+bindFileName('trailerFile', 'trailerFileName', 'MP4, WEBM, MOV');
+
+$('#bookCover').addEventListener('change', () => {
+  const file = $('#bookCover').files && $('#bookCover').files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  $('#coverPreview').style.backgroundImage = `url("${url}")`;
+  $('#coverPreview').textContent = '';
+});
+
+$('#bookBackgrounds').addEventListener('change', () => {
+  const files = Array.from($('#bookBackgrounds').files || []).slice(0, 3);
+  const strip = $('#backgroundPreviewStrip');
+  strip.innerHTML = '';
+  if (!files.length) {
+    strip.innerHTML = '<div class="background-preview-placeholder"></div>';
+    return;
+  }
+  files.forEach((file) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'background-thumb';
+    thumb.style.backgroundImage = `url("${URL.createObjectURL(file)}")`;
+    strip.appendChild(thumb);
+  });
+});
