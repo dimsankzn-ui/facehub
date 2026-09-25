@@ -19,11 +19,7 @@
       <a href="poetry.html">Стихи</a>
       <a href="blog.html">Блог</a>
     </nav>
-    <div class="header-actions">
-      <button class="admin-button soft" id="openAlbum" type="button">+ Добавить альбом</button>
-      <button class="admin-button primary" id="openSong" type="button">+ Добавить песню</button>
-      <a class="account-link" href="auth.html">Личный кабинет</a>
-    </div>
+    <a class="account-link" href="auth.html">Личный кабинет</a>
   </header>
 
   <main class="music-main">
@@ -33,7 +29,13 @@
         <h1>Музыка</h1>
         <p>Отдельные композиции, демо и альбомы — в одном спокойном пространстве без лишнего шума.</p>
       </div>
-      <div class="hero-meta"><span id="songCount">0 композиций</span> · <span id="albumCount">0 альбомов</span></div>
+      <div class="hero-side">
+        <div class="hero-meta"><span id="songCount">0 композиций</span> · <span id="albumCount">0 альбомов</span></div>
+        <div class="hero-admin-actions">
+          <button class="admin-button soft" id="openAlbum" type="button">+ Добавить альбом</button>
+          <button class="admin-button primary" id="openSong" type="button">+ Добавить песню</button>
+        </div>
+      </div>
     </section>
 
     <section class="library">
