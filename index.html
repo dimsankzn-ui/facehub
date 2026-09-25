@@ -1,43 +1,69 @@
 <!doctype html>
 <html lang="ru">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Дим Саныч — личный хаб</title>
 <link rel="stylesheet" href="assets/css/styles.css">
 </head>
 <body>
-<div class="app">
-  <div class="ambient"><div class="ring a"></div><div class="blob"></div><div class="arc"></div><div class="ring b"></div></div>
-  <header class="header"><nav class="nav"><div class="brand"><div class="logo">ДС</div><span>Дим Саныч</span></div><div class="links"><button class="nav-btn active" data-view="home">Главная</button><button class="nav-btn" onclick="location.href='books.html'">Книги</button><button class="nav-btn" onclick="location.href='music.html'">Музыка</button><button class="nav-btn" onclick="location.href='poetry.html'">Стихи</button><button class="nav-btn" onclick="location.href='blog.html'">Блог</button></div><a class="login-btn" href="auth.html">Войти</a></nav></header>
+<div class="home-app">
+  <div class="ambient" aria-hidden="true">
+    <div class="ring ring-left"></div>
+    <div class="glow"></div>
+    <div class="arc"></div>
+  </div>
 
-  <main class="stage">
-    <section class="view home active" id="view-home">
+  <header class="index-header">
+    <a class="brand" href="index.html" aria-label="Главная">
+      <span class="logo">ДС</span>
+      <span>Дим Саныч</span>
+    </a>
+
+    <nav class="page-nav" aria-label="Основная навигация">
+      <a class="active" href="index.html">Главная</a>
+      <a href="books.html">Книги</a>
+      <a href="music.html">Музыка</a>
+      <a href="poetry.html">Стихи</a>
+      <a href="blog.html">Блог</a>
+    </nav>
+
+    <a class="account-link" href="auth.html">Личный кабинет</a>
+  </header>
+
+  <main class="home-main">
+    <section class="hero">
       <div class="home-copy">
         <div class="eyebrow"><i></i> личное цифровое пространство</div>
         <h1>Тексты, звук<br>и немного личного.</h1>
         <p class="lead">Книги, музыка, стихи и заметки — без лишнего шума. Часть материалов открыта всем, часть доступна только тем, кому я сам открыл доступ.</p>
-        <div class="home-actions"><button class="btn primary" onclick="location.href='books.html'">Открыть архив</button><a class="btn soft" href="auth.html">Личный кабинет</a></div>
+        <div class="home-actions">
+          <a class="button primary" href="books.html">Открыть архив</a>
+          <a class="button soft" href="auth.html">Личный кабинет</a>
+        </div>
       </div>
-      <div class="visual" aria-hidden="true"><div class="glass-main"><div class="sound"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div><div><div class="feature-title">Новая композиция</div><div class="feature-sub">Черновая запись · закрытый доступ</div></div></div><div class="glass-mini one"><div class="symbol">♪</div></div><div class="glass-mini two"><div class="symbol">✦</div></div></div>
-      <div class="home-index"><button class="index-btn" onclick="location.href='books.html'"><span>Книги</span><span>↗</span></button><button class="index-btn" onclick="location.href='music.html'"><span>Музыка</span><span>↗</span></button><button class="index-btn" onclick="location.href='poetry.html'"><span>Стихи</span><span>↗</span></button><button class="index-btn" onclick="location.href='blog.html'"><span>Блог</span><span>↗</span></button></div>
+
+      <div class="visual" aria-hidden="true">
+        <div class="glass-main">
+          <div class="sound"><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+          <div>
+            <div class="feature-title">Личное пространство</div>
+            <div class="feature-sub">Книги · музыка · стихи · блог</div>
+          </div>
+        </div>
+        <div class="glass-mini one"><div class="symbol">♪</div></div>
+        <div class="glass-mini two"><div class="symbol">✦</div></div>
+      </div>
     </section>
 
-    <section class="view collection" id="view-books"><div class="collection-side"><div><button class="back" onclick="showView('home')">← На главную</button><h2>Книги</h2><p>Рукописи, главы и законченные тексты. Каждый материал — отдельное пространство для чтения.</p></div><div class="collection-count">03 материала</div></div><div class="cards"><article class="content-card"><div><div class="cover">⌁</div><span class="tag">Публично</span><h3>Глава без названия</h3><p>Фрагмент будущей книги.</p></div><div class="meta"><span>12 сентября</span><span>Читать →</span></div></article><article class="content-card"><div><div class="cover">◌</div><span class="tag">Закрыто</span><h3>Черновик книги</h3><p>Материал только по персональному доступу.</p></div><div class="meta"><span>21 сентября</span><span class="locked">нужен доступ</span></div></article><article class="content-card"><div><div class="cover">✦</div><span class="tag">Публично</span><h3>Записки на полях</h3><p>Короткие заметки о процессе письма.</p></div><div class="meta"><span>24 сентября</span><span>Открыть →</span></div></article></div></section>
-
-    <section class="view collection" id="view-music"><div class="collection-side"><div><button class="back" onclick="showView('home')">← На главную</button><h2>Музыка</h2><p>Композиции, демо и личные записи. Слушать можно прямо здесь.</p></div><div class="collection-count">03 материала</div></div><div class="cards"><article class="content-card"><div><div class="cover">♪</div><span class="tag">Публично</span><h3>Первый свет</h3><p>Инструментальная композиция.</p></div><div class="meta"><span>3:42</span><span>Слушать →</span></div></article><article class="content-card"><div><div class="cover">≋</div><span class="tag">Закрыто</span><h3>Ночная запись</h3><p>Черновая версия для приглашённых.</p></div><div class="meta"><span>4:18</span><span class="locked">нужен доступ</span></div></article><article class="content-card"><div><div class="cover">◫</div><span class="tag">Публично</span><h3>Эскиз №7</h3><p>Минималистичный фортепианный этюд.</p></div><div class="meta"><span>2:56</span><span>Слушать →</span></div></article></div></section>
-
-    <section class="view collection" id="view-poetry"><div class="collection-side"><div><button class="back" onclick="showView('home')">← На главную</button><h2>Стихи</h2><p>Отдельные тексты и сборники — без лишних элементов вокруг.</p></div><div class="collection-count">03 материала</div></div><div class="cards"><article class="content-card"><div><div class="cover">❦</div><span class="tag">Публично</span><h3>После дождя</h3><p>Короткий текст о тишине города.</p></div><div class="meta"><span>8 строк</span><span>Читать →</span></div></article><article class="content-card"><div><div class="cover">·</div><span class="tag">Закрыто</span><h3>Сборник без названия</h3><p>Личный архив текстов.</p></div><div class="meta"><span>12 стихов</span><span class="locked">нужен доступ</span></div></article><article class="content-card"><div><div class="cover">∿</div><span class="tag">Публично</span><h3>Сентябрь</h3><p>Небольшой осенний текст.</p></div><div class="meta"><span>14 строк</span><span>Читать →</span></div></article></div></section>
-
-    <section class="view collection" id="view-blog"><div class="collection-side"><div><button class="back" onclick="showView('home')">← На главную</button><h2>Блог</h2><p>Наблюдения, мысли и длинные заметки без алгоритмической ленты.</p></div><div class="collection-count">03 публикации</div></div><div class="cards"><article class="content-card"><div><div class="cover">↗</div><span class="tag">Публично</span><h3>Почему личный сайт снова важен</h3><p>О пространстве, которое принадлежит только автору.</p></div><div class="meta"><span>24 сентября</span><span>Читать →</span></div></article><article class="content-card"><div><div class="cover">◐</div><span class="tag">Публично</span><h3>Медленные интерфейсы</h3><p>Почему не всё должно требовать мгновенной реакции.</p></div><div class="meta"><span>18 сентября</span><span>Читать →</span></div></article><article class="content-card"><div><div class="cover">□</div><span class="tag">Закрыто</span><h3>Личная заметка</h3><p>Материал для ограниченного круга читателей.</p></div><div class="meta"><span>9 сентября</span><span class="locked">нужен доступ</span></div></article></div></section>
-
-    <section class="view admin-view" id="view-admin"><aside class="side"><button class="active" data-admin="overview">Обзор</button><button data-admin="users">Пользователи</button><button data-admin="content">Материалы</button><button data-admin="gifts">Доступы</button><button data-admin="payment">Монетизация</button><button onclick="showView('home')">← На сайт</button></aside><div class="panel"><div class="admin-section active" id="admin-overview"><div class="panel-head"><div><div class="tiny">Панель владельца</div><h2>Добро пожаловать</h2></div><span class="status">dimsan.kzn@gmail.com</span></div><div class="stats"><div class="stat"><b>128</b><span>пользователей</span></div><div class="stat"><b>34</b><span>материала</span></div><div class="stat"><b>17</b><span>активных даров</span></div><div class="stat"><b>0 ₽</b><span>монетизация выключена</span></div></div><div class="callout">Права владельца в рабочей версии должны проверяться на сервере по подтверждённой почте.</div></div><div class="admin-section" id="admin-users"><div class="panel-head"><h2>Пользователи</h2></div><table><tr><th>Пользователь</th><th>Статус</th><th>Доступов</th><th></th></tr><tr><td>Анна · anna@example.ru</td><td><span class="status">активен</span></td><td>3</td><td><button class="mini-btn" onclick="toggleBlock(this)">Заблокировать</button></td></tr><tr><td>Мария · maria@example.ru</td><td><span class="status blocked">заблокирован</span></td><td>0</td><td><button class="mini-btn" onclick="toggleBlock(this)">Разблокировать</button></td></tr></table></div><div class="admin-section" id="admin-content"><div class="panel-head"><h2>Материалы</h2><button class="btn primary" onclick="openAddContent()">Добавить</button></div><div class="callout">Книги, музыка, стихи и блог управляются отсюда. У каждого материала есть публичный или закрытый режим.</div></div><div class="admin-section" id="admin-gifts"><div class="panel-head"><h2>Подаренный доступ</h2><button class="btn primary" onclick="openGift()">Подарить</button></div><table><tr><th>Кому</th><th>Материал</th><th>Тип</th><th></th></tr><tr><td>Анна</td><td>Ночная запись</td><td>До отзыва</td><td><button class="mini-btn">Отозвать</button></td></tr><tr><td>Илья</td><td>Черновик книги</td><td>Навсегда</td><td><span class="tiny">неотзывный</span></td></tr></table></div><div class="admin-section" id="admin-payment"><div class="panel-head"><h2>Монетизация</h2><span class="status blocked">не подключено</span></div><div class="callout">Интеграция с Т‑Банком подготовлена концептуально, но реальные платежи отключены. Секреты и ключи должны храниться только на сервере.</div></div></div></section>
+    <nav class="section-index" aria-label="Разделы сайта">
+      <a class="index-card" href="books.html"><span><small>01</small>Книги</span><b>↗</b></a>
+      <a class="index-card" href="music.html"><span><small>02</small>Музыка</span><b>↗</b></a>
+      <a class="index-card" href="poetry.html"><span><small>03</small>Стихи</span><b>↗</b></a>
+      <a class="index-card" href="blog.html"><span><small>04</small>Блог</span><b>↗</b></a>
+    </nav>
   </main>
 </div>
-
-<div class="modal-backdrop" id="giftModal"><div class="modal"><h3>Подарить доступ</h3><div class="field"><label>Пользователь</label><select><option>Анна · anna@example.ru</option><option>Илья · ilya@example.ru</option></select></div><div class="field"><label>Материал</label><select><option>Ночная запись</option><option>Черновик книги</option></select></div><div class="field"><label>Тип</label><select><option>До отзыва владельцем</option><option>Навсегда</option></select></div><div class="modal-actions"><button class="btn soft" onclick="closeModal('giftModal')">Отмена</button><button class="btn primary" onclick="giftAccess()">Подарить</button></div></div></div>
-<div class="modal-backdrop" id="addContentModal"><div class="modal"><h3>Новый материал</h3><div class="field"><label>Раздел</label><select><option>Книги</option><option>Музыка</option><option>Стихи</option><option>Блог</option></select></div><div class="field"><label>Название</label><input placeholder="Название"></div><div class="field"><label>Видимость</label><select><option>Публичный</option><option>Скрытый — по персональному доступу</option></select></div><div class="modal-actions"><button class="btn soft" onclick="closeModal('addContentModal')">Отмена</button><button class="btn primary" onclick="addContent()">Сохранить</button></div></div></div>
-<div class="toast" id="toast"></div>
 <script src="assets/js/app.js" defer></script>
 </body>
 </html>
