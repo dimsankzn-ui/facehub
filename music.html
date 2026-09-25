@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Музыка — Дим Саныч</title>
+<link rel="stylesheet" href="assets/css/music.css">
+</head>
+<body>
+<div class="music-app">
+  <div class="ambient" aria-hidden="true"><div class="ring"></div><div class="glow"></div><div class="line"></div></div>
+
+  <header class="music-header">
+    <a class="brand" href="index.html"><span class="logo">ДС</span><span>Дим Саныч</span></a>
+    <nav class="page-nav" aria-label="Основная навигация">
+      <a href="index.html">Главная</a>
+      <a href="books.html">Книги</a>
+      <a class="active" href="music.html">Музыка</a>
+      <a href="index.html?view=poetry">Стихи</a>
+      <a href="index.html?view=blog">Блог</a>
+    </nav>
+    <div class="header-actions">
+      <button class="admin-button soft" id="openAlbum" type="button">+ Добавить альбом</button>
+      <button class="admin-button primary" id="openSong" type="button">+ Добавить песню</button>
+      <a class="account-link" href="auth.html">Личный кабинет</a>
+    </div>
+  </header>
+
+  <main class="music-main">
+    <section class="hero">
+      <div>
+        <div class="eyebrow"><i></i> личная фонотека</div>
+        <h1>Музыка</h1>
+        <p>Отдельные композиции, демо и альбомы — в одном спокойном пространстве без лишнего шума.</p>
+      </div>
+      <div class="hero-meta"><span id="songCount">0 композиций</span> · <span id="albumCount">0 альбомов</span></div>
+    </section>
+
+    <section class="library">
+      <section class="section albums-section">
+        <div class="section-head"><h2>Альбомы</h2><span class="count" id="albumCountSmall">0</span></div>
+        <div class="albums" id="albumsList"></div>
+        <div class="empty empty-albums" id="emptyAlbums"><div><strong>Альбомов пока нет</strong><span>Когда появятся альбомы, они будут собраны здесь отдельной группой.</span></div></div>
+      </section>
+
+      <section class="section songs-section">
+        <div class="section-head"><h2>Композиции</h2><span class="count" id="songCountSmall">0</span></div>
+        <div class="songs" id="songsList"></div>
+        <div class="empty empty-songs" id="emptySongs"><div><strong>Музыки пока нет</strong><span>Здесь появится список загруженных композиций.</span></div></div>
+      </section>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="albumModal" aria-hidden="true">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="albumModalTitle">
+    <div class="modal-head">
+      <div><div class="kicker" id="albumKicker">Новый альбом</div><h2 id="albumModalTitle">Добавить альбом</h2></div>
+      <button class="close" type="button" data-close="albumModal" aria-label="Закрыть">×</button>
+    </div>
+
+    <form id="albumForm" class="album-form-shell">
+      <div class="album-form">
+        <div>
+          <span class="label">Обложка альбома</span>
+          <label class="cover-box square" for="albumCover">
+            <input id="albumCover" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <div>
+              <div class="cover-icon" id="albumCoverPreview">＋</div>
+              <strong>Загрузить обложку</strong>
+              <small id="albumCoverName">Квадратное изображение · JPG, PNG, WEBP</small>
+            </div>
+          </label>
+        </div>
+
+        <div class="album-right">
+          <div class="two">
+            <label class="field"><span class="label">Название альбома</span><input id="albumTitle" type="text" placeholder="Название" required></label>
+            <label class="field"><span class="label">Год</span><input id="albumYear" type="number" min="1900" max="2100" value="2026"></label>
+          </div>
+
+          <label class="field"><span class="label">Описание альбома</span><textarea id="albumDescription" placeholder="Описание альбома"></textarea></label>
+
+          <div class="song-selector">
+            <div class="song-selector-head"><strong>Песни альбома</strong><span>выберите загруженные или добавьте новые</span></div>
+            <div class="selector-list" id="albumSongSelector"></div>
+            <button class="upload-card" id="openSongFromAlbum" type="button">
+              <span class="upload-card-icon">＋</span>
+              <span><strong>Загрузить новую песню</strong><small>Откроется карточка добавления песни</small></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="action-btn soft" type="button" data-close="albumModal">Отмена</button>
+        <button class="action-btn primary" id="saveAlbumButton" type="submit">Добавить альбом</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div class="modal-backdrop" id="songModal" aria-hidden="true">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="songModalTitle">
+    <div class="modal-head">
+      <div><div class="kicker" id="songKicker">Новая композиция</div><h2 id="songModalTitle">Добавить песню</h2></div>
+      <button class="close" type="button" data-close="songModal" aria-label="Закрыть">×</button>
+    </div>
+
+    <form id="songForm" class="song-form-shell">
+      <div class="song-form">
+        <div>
+          <span class="label">Обложка песни</span>
+          <label class="cover-box square" for="songCover">
+            <input id="songCover" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+            <div>
+              <div class="cover-icon" id="songCoverPreview">＋</div>
+              <strong>Загрузить обложку</strong>
+              <small id="songCoverName">Квадратное изображение · JPG, PNG, WEBP</small>
+            </div>
+          </label>
+        </div>
+
+        <div class="song-right">
+          <label class="field"><span class="label">Название песни</span><input id="songTitle" type="text" placeholder="Название" required></label>
+          <label class="field"><span class="label">Год</span><input id="songYear" type="number" min="1900" max="2100" value="2026"></label>
+
+          <label class="field"><span class="label">Направление музыки</span><input id="songGenre" type="text" placeholder="Например: эмбиент"></label>
+          <label class="field"><span class="label">Альбом</span><select id="songAlbum"></select></label>
+
+          <label class="field"><span class="label">Автор слов</span><input id="songLyricsAuthor" type="text" placeholder="Имя или псевдоним"></label>
+          <label class="field"><span class="label">Автор музыки</span><input id="songMusicAuthor" type="text" placeholder="Имя или псевдоним"></label>
+
+          <label class="checkbox full"><input id="songAiPerformer" type="checkbox"> <span>ИИ-исполнитель</span></label>
+
+          <label class="field full lyrics"><span class="label">Слова песни</span><textarea id="songLyrics" placeholder="Текст песни"></textarea></label>
+
+          <label class="song-file" for="songAudio">
+            <input id="songAudio" type="file" accept=".mp3,.wav,.flac,.aac,.m4a,audio/*" hidden>
+            <span class="upload-card-icon">♪</span>
+            <span><strong>Загрузить аудиофайл</strong><small id="songAudioName">MP3, WAV, FLAC, AAC, M4A</small></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="action-btn soft" type="button" data-close="songModal">Отмена</button>
+        <button class="action-btn primary" id="saveSongButton" type="submit">Добавить песню</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div class="player" id="player" aria-hidden="true">
+  <div class="player-cover" id="playerCover">♪</div>
+  <div class="player-copy"><strong id="playerTitle">Композиция</strong><span id="playerSubtitle">Онлайн-воспроизведение</span></div>
+  <div class="player-progress"><i id="playerProgress"></i></div>
+  <span class="player-time" id="playerTime">0:00 / 3:42</span>
+  <button class="player-control" id="playerToggle" type="button">Ⅱ</button>
+  <button class="player-close" id="playerClose" type="button">×</button>
+  <audio id="audioElement"></audio>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/music.js" defer></script>
+</body>
+</html>
