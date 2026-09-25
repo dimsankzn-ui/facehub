@@ -104,12 +104,21 @@ function closeOverlay(id) {
   $('#' + id).setAttribute('aria-hidden', 'true');
 }
 
+function toast(message) {
+  const node = $('#toast');
+  if (!node) return;
+  node.textContent = message;
+  node.classList.add('show');
+  clearTimeout(window.__bookPageToast);
+  window.__bookPageToast = setTimeout(() => node.classList.remove('show'), 2000);
+}
+
 document.addEventListener('click', (event) => {
   const action = event.target.closest('[data-action]')?.dataset.action;
   if (action === 'reader') openOverlay('readerOverlay');
   if (action === 'audio') openOverlay('audioOverlay');
-  if (action === 'download-ebook') alert('В рабочей версии здесь начнётся скачивание электронной книги.');
-  if (action === 'download-audio') alert('В рабочей версии здесь начнётся скачивание аудиокниги.');
+  if (action === 'download-ebook') toast('Скачивание электронной книги будет доступно после подключения файлового хранилища.');
+  if (action === 'download-audio') toast('Скачивание аудиокниги будет доступно после подключения файлового хранилища.');
 });
 
 document.querySelectorAll('[data-close]').forEach((button) => {
