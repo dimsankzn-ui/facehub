@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Книги — Дим Саныч</title>
+<link rel="stylesheet" href="assets/css/books.css">
+</head>
+<body>
+<div class="books-app">
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient-ring ring-left"></div>
+    <div class="ambient-glow"></div>
+    <div class="ambient-line"></div>
+  </div>
+
+  <header class="books-header">
+    <a class="brand" href="index.html">
+      <span class="logo">ДС</span>
+      <span>Дим Саныч</span>
+    </a>
+
+    <nav class="page-nav" aria-label="Основная навигация">
+      <a href="index.html">Главная</a>
+      <a class="active" href="books.html">Книги</a>
+      <a href="index.html?view=music">Музыка</a>
+      <a href="index.html?view=poetry">Стихи</a>
+      <a href="index.html?view=blog">Блог</a>
+    </nav>
+
+    <div class="header-actions">
+      <button class="add-book header-add" id="headerAddBook" type="button">+ Добавить книгу</button>
+      <a class="account-link" href="auth.html">Личный кабинет</a>
+    </div>
+  </header>
+
+  <main class="books-main">
+    <section class="books-intro">
+      <div>
+        <div class="eyebrow"><i></i> личная библиотека</div>
+        <h1>Книги</h1>
+        <p>Рукописи, законченные тексты и книги, которыми хочется делиться.</p>
+      </div>
+
+      <div class="books-meta">
+        <span id="bookCount">0 книг</span>
+        <button class="add-book intro-add" id="introAddBook" type="button">+ Добавить книгу</button>
+      </div>
+    </section>
+
+    <section class="shelf-zone" aria-label="Книжная полка">
+      <div class="shelf-scene">
+        <div class="books-row" id="booksRow" aria-live="polite"></div>
+        <div class="shelf">
+          <div class="shelf-top"></div>
+          <div class="shelf-front"></div>
+          <div class="shelf-shadow"></div>
+        </div>
+      </div>
+
+      <div class="empty-state" id="emptyState">
+        <div class="empty-mark">⌑</div>
+        <h2>Полка пока пустая</h2>
+        <p>Здесь появятся книги после того, как владелец добавит первую.</p>
+        <button class="add-book empty-add" id="emptyAddBook" type="button">Добавить первую книгу</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="bookModal" aria-hidden="true">
+  <div class="book-modal" role="dialog" aria-modal="true" aria-labelledby="bookModalTitle">
+    <div class="modal-head">
+      <div>
+        <div class="modal-kicker">Новая книга</div>
+        <h2 id="bookModalTitle">Добавить на полку</h2>
+      </div>
+      <button class="modal-close" id="modalClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+
+    <form id="bookForm">
+      <label class="field">
+        <span>Название</span>
+        <input id="bookTitle" type="text" placeholder="Название книги" required>
+      </label>
+
+      <div class="two-fields">
+        <label class="field">
+          <span>Автор</span>
+          <input id="bookAuthor" type="text" value="Дим Саныч" placeholder="Автор">
+        </label>
+
+        <label class="field">
+          <span>Год</span>
+          <input id="bookYear" type="number" min="1900" max="2100" placeholder="2026">
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Короткое описание</span>
+        <textarea id="bookDescription" placeholder="Несколько строк о книге"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Доступ</span>
+        <select id="bookVisibility">
+          <option value="public">Публичная</option>
+          <option value="restricted">По персональному доступу</option>
+        </select>
+      </label>
+
+      <div class="cover-picker">
+        <span>Обложка</span>
+        <div class="cover-options" id="coverOptions">
+          <button class="cover-choice active" type="button" data-cover="mist" aria-label="Светло-голубая"></button>
+          <button class="cover-choice" type="button" data-cover="graphite" aria-label="Графитовая"></button>
+          <button class="cover-choice" type="button" data-cover="sand" aria-label="Песочная"></button>
+          <button class="cover-choice" type="button" data-cover="lavender" aria-label="Лавандовая"></button>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="button soft" id="modalCancel" type="button">Отмена</button>
+        <button class="button primary" type="submit">Добавить книгу</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/books.js" defer></script>
+</body>
+</html>
