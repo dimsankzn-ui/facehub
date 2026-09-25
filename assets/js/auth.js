@@ -109,7 +109,7 @@ $('#loginForm').addEventListener('submit', (event) => {
 
   if (email === 'dimsan.kzn@gmail.com') {
     sessionStorage.setItem('facehubDemoRole', 'owner');
-    setTimeout(() => location.href = 'index.html?view=admin', 450);
+    setTimeout(() => location.href = 'index.html', 450);
     return;
   }
 
