@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Блог — Дим Саныч</title>
+<link rel="stylesheet" href="assets/css/blog.css">
+</head>
+<body>
+<div class="blog-app">
+  <div class="ambient" aria-hidden="true"><div class="orbit"></div><div class="glow"></div></div>
+
+  <header class="blog-header">
+    <a class="brand" href="index.html"><span class="logo">ДС</span><span>Дим Саныч</span></a>
+    <nav class="page-nav" aria-label="Основная навигация">
+      <a href="index.html">Главная</a>
+      <a href="books.html">Книги</a>
+      <a href="music.html">Музыка</a>
+      <a href="poetry.html">Стихи</a>
+      <a class="active" href="blog.html">Блог</a>
+    </nav>
+    <a class="account-link" href="auth.html">Личный кабинет</a>
+  </header>
+
+  <main class="blog-main">
+    <section class="topline">
+      <div>
+        <div class="eyebrow"><i></i> личный журнал</div>
+        <h1>Блог</h1>
+        <p>Мысли, заметки, наблюдения и тексты, которым тесно в других разделах.</p>
+      </div>
+      <div class="top-actions">
+        <label class="search"><span>⌕</span><input id="blogSearch" type="search" placeholder="Найти публикацию"></label>
+        <button class="add-post" id="openPostEditor" type="button">+ Добавить пост</button>
+      </div>
+    </section>
+
+    <div class="filters-row">
+      <div class="filters" id="tagFilters"></div>
+      <button class="manage-tags" id="openTagManager" type="button">⚙ Настроить теги</button>
+    </div>
+
+    <section class="blog-grid">
+      <article class="featured" id="featuredPost">
+        <div class="featured-cover" id="featuredCover"></div>
+        <button class="edit-featured" id="editFeatured" type="button" title="Редактировать">✎</button>
+        <div class="featured-content">
+          <div class="featured-meta"><span class="tag" id="featuredTag">—</span><span id="featuredDate">—</span></div>
+          <h2 id="featuredTitle">Публикаций пока нет</h2>
+          <p id="featuredExcerpt">Когда появится первая публикация, она будет показана здесь.</p>
+          <button class="read-more" id="readFeatured" type="button">Читать публикацию →</button>
+        </div>
+      </article>
+
+      <aside class="feed">
+        <div class="feed-head"><h2>Последние публикации</h2><span id="postCount">0 постов</span></div>
+        <div class="posts" id="postList"></div>
+        <div class="feed-empty" id="feedEmpty">Публикаций пока нет.</div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<div class="overlay" id="viewerOverlay" aria-hidden="true">
+  <section class="viewer">
+    <div class="viewer-top">
+      <button type="button" data-close="viewerOverlay">← Назад</button>
+      <div class="viewer-title-mini" id="viewerTitleMini">Публикация</div>
+      <button id="sharePost" type="button">↗ Поделиться</button>
+    </div>
+    <div class="viewer-scroll" id="viewerScroll">
+      <div class="hero-post" id="viewerHero">
+        <div class="hero-post-copy">
+          <div class="meta" id="viewerMeta">—</div>
+          <h2 id="viewerTitle">Публикация</h2>
+        </div>
+      </div>
+      <article class="article-content">
+        <div id="viewerBlocks"></div>
+        <div class="article-end"><span>Дим Саныч</span><span>Конец публикации</span></div>
+      </article>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="editorOverlay" aria-hidden="true">
+  <section class="modal editor-modal">
+    <div class="modal-head">
+      <div><div class="kicker" id="editorKicker">Новая публикация</div><h2 id="editorTitle">Добавить пост</h2></div>
+      <button class="close" type="button" data-close="editorOverlay" aria-label="Закрыть">×</button>
+    </div>
+
+    <form id="postForm" class="post-form">
+      <div class="editor">
+        <aside class="post-settings">
+          <label class="field"><span class="label">Заголовок</span><input id="postTitle" type="text" placeholder="Название публикации" required></label>
+          <label class="field"><span class="label">Тег</span><select id="postTag"></select></label>
+          <label class="field"><span class="label">Дата публикации</span><input id="postDate" type="date"></label>
+          <label class="field"><span class="label">Короткое описание</span><textarea id="postExcerpt" placeholder="Небольшой анонс публикации"></textarea></label>
+
+          <div>
+            <span class="label">Титульное изображение</span>
+            <label class="cover-mini drop-zone" for="postCover">
+              <input id="postCover" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+              <div class="cover-icon" id="postCoverPreview">＋</div>
+              <strong>Добавить изображение</strong>
+              <small id="postCoverName">JPG, PNG, WEBP</small>
+            </label>
+          </div>
+        </aside>
+
+        <section class="blocks-panel">
+          <div class="blocks-head">
+            <strong>Содержание публикации</strong>
+            <span>Перетащите блок за любую свободную область карточки</span>
+          </div>
+
+          <div class="blocks-stage">
+            <div class="blocks-list" id="blocksList"></div>
+          </div>
+
+          <div class="add-blocks">
+            <div class="add-menu" id="addBlockMenu">
+              <button class="add-choice" data-add-block="text" type="button"><span>¶</span><small>Текст</small></button>
+              <button class="add-choice" data-add-block="photo" type="button"><span>▧</span><small>Фото</small></button>
+              <button class="add-choice" data-add-block="video" type="button"><span>▶</span><small>Видео</small></button>
+            </div>
+            <button class="add-block" id="openAddBlockMenu" type="button">＋ Добавить блок</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="modal-actions">
+        <button class="action soft" type="button" data-close="editorOverlay">Отмена</button>
+        <button class="action primary" id="savePostButton" type="submit">Опубликовать</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div class="overlay" id="tagsOverlay" aria-hidden="true">
+  <section class="modal tags-modal">
+    <div class="modal-head">
+      <div><div class="kicker">Структура блога</div><h2>Настроить теги</h2></div>
+      <button class="close" type="button" data-close="tagsOverlay" aria-label="Закрыть">×</button>
+    </div>
+
+    <div class="tags-layout">
+      <div class="tag-list-box">
+        <h3>Текущие теги</h3>
+        <div class="tag-list" id="tagManagerList"></div>
+      </div>
+      <div class="tag-edit-box">
+        <h3>Добавить новый тег</h3>
+        <label class="field"><span class="label">Название</span><input id="newTagName" type="text" placeholder="Например: Путешествия"></label>
+        <label class="field"><span class="label">Короткое описание</span><input id="newTagDescription" type="text" placeholder="Для чего этот тег"></label>
+        <button class="action primary" id="addTagButton" type="button">+ Добавить тег</button>
+        <h3 class="preview-heading">Предпросмотр</h3>
+        <div class="tag-preview" id="tagPreview"></div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="action soft" type="button" data-close="tagsOverlay">Закрыть</button>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/blog.js" defer></script>
+</body>
+</html>
