@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Книга — Дим Саныч</title>
+<link rel="stylesheet" href="assets/css/book.css">
+</head>
+<body>
+<div class="book-page">
+  <div class="book-backgrounds" id="bookBackgroundsView" aria-hidden="true">
+    <div class="bg-layer bg-one active"></div>
+    <div class="bg-layer bg-two"></div>
+    <div class="bg-layer bg-three"></div>
+  </div>
+
+  <header class="book-header">
+    <a class="back" href="books.html">← Назад</a>
+    <div class="brand"><span class="logo">ДС</span><span>Дим Саныч · Книги</span></div>
+    <div class="background-progress" id="backgroundProgress">
+      <i class="active"></i><i></i><i></i>
+    </div>
+  </header>
+
+  <main class="book-content">
+    <section class="book-card">
+      <div class="kicker" id="bookKicker">Книга · доступно</div>
+      <h1 id="bookTitleView">Тихая линия</h1>
+      <p class="description" id="bookDescriptionView">История о памяти, дороге и тех разговорах, которые случаются слишком поздно.</p>
+
+      <div class="actions">
+        <button class="btn primary" id="trailerButton" type="button">▶ Смотреть трейлер</button>
+      </div>
+
+      <div class="access" id="accessBlock">
+        <div class="access-head">
+          <span class="access-title">Ваши материалы</span>
+          <span class="purchased"><i></i> Книга куплена</span>
+        </div>
+
+        <div class="downloads" id="downloads"></div>
+      </div>
+    </section>
+
+    <div class="book-cover" id="bookCoverView"><small>Дим Саныч</small></div>
+  </main>
+</div>
+
+<div class="overlay" id="readerOverlay" aria-hidden="true">
+  <div class="overlay-top">
+    <button class="close-overlay" type="button" data-close="readerOverlay">← К книге</button>
+    <div class="overlay-title"><span id="readerBookTitle">Книга</span> · Электронная книга</div>
+    <div class="overlay-spacer"></div>
+  </div>
+
+  <div class="reader-shell">
+    <aside class="reader-side">
+      <div class="reader-tools">
+        <button class="reader-tool" id="fontMinus" type="button">А−</button>
+        <button class="reader-tool" id="fontPlus" type="button">А+</button>
+        <button class="reader-tool" id="readerTheme" type="button">Светлая тема</button>
+      </div>
+      <span id="readerFormat">EPUB</span>
+    </aside>
+
+    <article class="reader-page" id="readerPage">
+      <h2 id="readerHeading">Тихая линия</h2>
+      <p>Он остановился у окна и долго смотрел на дорогу. Она была пустой, как будто город на несколько минут забыл о себе.</p>
+      <p>Слова, которые он собирался произнести, вдруг показались слишком громкими. Поэтому он просто остался стоять — и слушал, как за стеклом начинается дождь.</p>
+      <div class="reader-nav">
+        <button type="button" id="readerPrev">←</button>
+        <span id="readerPageNumber">42 / 318</span>
+        <button type="button" id="readerNext">→</button>
+      </div>
+    </article>
+
+    <aside class="reader-side right">
+      <span id="readerChapter">Глава 3 из 18</span>
+      <div class="reader-tools">
+        <button class="reader-tool" type="button">Оглавление</button>
+        <button class="reader-tool" type="button">Закладка</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="overlay" id="audioOverlay" aria-hidden="true">
+  <div class="overlay-top">
+    <button class="close-overlay" type="button" data-close="audioOverlay">← К книге</button>
+    <div class="overlay-title"><span id="audioBookTitle">Книга</span> · Аудиокнига</div>
+    <div class="overlay-spacer"></div>
+  </div>
+
+  <div class="audio-shell">
+    <section class="audio-panel">
+      <div class="audio-cover" id="audioCover"></div>
+
+      <div class="audio-main">
+        <div class="audio-kicker">Сейчас играет · Глава 3</div>
+        <h2 id="audioHeading">Тихая линия</h2>
+        <div class="audio-author">Дим Саныч</div>
+
+        <div class="timeline"><div class="timeline-progress" id="timelineProgress"></div></div>
+        <div class="time-row"><span id="audioCurrent">18:42</span><span id="audioDuration">49:15</span></div>
+
+        <div class="player-controls">
+          <button class="control" type="button">↶ 15</button>
+          <button class="control" type="button">◀</button>
+          <button class="play" id="playButton" type="button">Ⅱ</button>
+          <button class="control" type="button">▶</button>
+          <button class="control" type="button">15 ↷</button>
+        </div>
+
+        <div class="audio-bottom">
+          <button class="speed" id="speedButton" type="button">1× скорость</button>
+          <div class="chapters">
+            <button class="chapter" type="button">Глава 1</button>
+            <button class="chapter" type="button">Глава 2</button>
+            <button class="chapter active" type="button">Глава 3</button>
+            <button class="chapter" type="button">Глава 4</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="overlay trailer-overlay" id="trailerOverlay" aria-hidden="true">
+  <div class="overlay-top">
+    <button class="close-overlay" type="button" data-close="trailerOverlay">← К книге</button>
+    <div class="overlay-title">Трейлер книги</div>
+    <div class="overlay-spacer"></div>
+  </div>
+  <div class="trailer-shell">
+    <div class="trailer-frame">
+      <div class="trailer-placeholder">
+        <span>▶</span>
+        <strong id="trailerTitle">Трейлер книги</strong>
+        <small>Видео будет воспроизводиться здесь после подключения файлового хранилища.</small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/book.js" defer></script>
+</body>
+</html>
