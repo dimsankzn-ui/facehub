@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Стихи — Дим Саныч</title>
+<link rel="stylesheet" href="assets/css/poetry.css">
+</head>
+<body>
+<div class="poetry-app">
+  <div class="ambient" aria-hidden="true"><div class="arc"></div><div class="glow"></div></div>
+
+  <header class="poetry-header">
+    <a class="brand" href="index.html"><span class="logo">ДС</span><span>Дим Саныч</span></a>
+    <nav class="page-nav" aria-label="Основная навигация">
+      <a href="index.html">Главная</a>
+      <a href="books.html">Книги</a>
+      <a href="music.html">Музыка</a>
+      <a class="active" href="poetry.html">Стихи</a>
+      <a href="index.html?view=blog">Блог</a>
+    </nav>
+    <a class="account-link" href="auth.html">Личный кабинет</a>
+  </header>
+
+  <main class="poetry-main">
+    <section class="topline">
+      <div>
+        <div class="eyebrow"><i></i> архив текстов</div>
+        <h1>Стихи</h1>
+        <p>По годам, без лишней каталогизации — искать можно по названию или строкам.</p>
+      </div>
+      <div class="top-actions">
+        <label class="search"><span>⌕</span><input id="poetrySearch" type="search" placeholder="Найти стих или строку"></label>
+        <button class="add-button" id="openAddPoem" type="button">+ Добавить стих</button>
+      </div>
+    </section>
+
+    <section class="archive">
+      <aside class="years">
+        <div>
+          <div class="years-title">Годы</div>
+          <div class="year-list" id="yearList"></div>
+        </div>
+        <div class="year-total" id="yearTotal">0 текстов · 0 лет</div>
+      </aside>
+
+      <article class="reader" id="poemReader">
+        <div class="reader-top">
+          <div>
+            <div class="date" id="readerDate">—</div>
+            <div class="poem-title" id="readerTitle">Стихов пока нет</div>
+          </div>
+          <div class="reader-tools">
+            <button id="sharePoem" type="button" title="Поделиться">↗</button>
+            <button class="edit-poem-button" id="editPoem" type="button" title="Редактировать">✎</button>
+          </div>
+        </div>
+
+        <div class="poem" id="readerText">Добавленные стихи будут отображаться здесь.</div>
+
+        <div class="reader-foot">
+          <span id="readerMeta">—</span>
+          <button id="nextPoem" type="button">Следующий стих →</button>
+        </div>
+      </article>
+
+      <aside class="poems-panel">
+        <div class="panel-head"><h2 id="panelYear">—</h2><span id="panelCount">0 стихов</span></div>
+        <div class="poem-list" id="poemList"></div>
+        <div class="list-empty" id="listEmpty">В этом году стихов пока нет.</div>
+      </aside>
+    </section>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="poemModal" aria-hidden="true">
+  <section class="modal" role="dialog" aria-modal="true" aria-labelledby="poemModalTitle">
+    <div class="modal-head">
+      <div><div class="kicker" id="poemKicker">Новый текст</div><h2 id="poemModalTitle">Добавить стих</h2></div>
+      <button class="close" type="button" data-close="poemModal" aria-label="Закрыть">×</button>
+    </div>
+
+    <form class="poem-form" id="poemForm">
+      <div class="form">
+        <label class="field full">
+          <span class="label">Название <span class="optional">· необязательно</span></span>
+          <input id="poemTitleInput" type="text" placeholder="Если названия нет — оставьте пустым">
+        </label>
+
+        <div class="date-grid">
+          <label class="field"><span class="label">Год *</span><input id="poemYearInput" type="number" min="1" max="9999" required></label>
+          <label class="field"><span class="label">Месяц</span><input id="poemMonthInput" type="number" min="1" max="12" placeholder="Необязательно"></label>
+          <label class="field"><span class="label">День</span><input id="poemDayInput" type="number" min="1" max="31" placeholder="Необязательно"></label>
+        </div>
+
+        <div class="date-note">Год обязателен. Месяц и день можно не указывать — архив покажет только известную часть даты.</div>
+
+        <label class="field full">
+          <span class="label">Текст стихотворения</span>
+          <textarea id="poemTextInput" placeholder="Введите текст стихотворения" required></textarea>
+        </label>
+      </div>
+
+      <div class="modal-actions">
+        <button class="action soft" type="button" data-close="poemModal">Отмена</button>
+        <button class="action primary" id="savePoemButton" type="submit">Добавить стих</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/poetry.js" defer></script>
+</body>
+</html>
