@@ -92,7 +92,7 @@ function toast(message) {
 
 if (isOwner()) document.body.classList.add('is-owner');
 
-['headerAddBook', 'introAddBook', 'emptyAddBook'].forEach((id) => {
+['introAddBook', 'emptyAddBook'].forEach((id) => {
   $('#' + id).addEventListener('click', openModal);
 });
 
