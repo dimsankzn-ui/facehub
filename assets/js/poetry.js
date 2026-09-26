@@ -19,10 +19,11 @@ function toast(message){
 }
 
 function formatDate(poem){
-  const months=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  const monthsGenitive=['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+  const monthsNominative=['январь','февраль','март','апрель','май','июнь','июль','август','сентябрь','октябрь','ноябрь','декабрь'];
   const month=Number(poem.month),day=Number(poem.day),year=poem.year;
-  if(day&&month)return day+' '+months[month-1]+' '+year;
-  if(month)return months[month-1].replace(/я$/,'ь')+' '+year;
+  if(day&&month>=1&&month<=12)return day+' '+monthsGenitive[month-1]+' '+year;
+  if(month>=1&&month<=12)return monthsNominative[month-1]+' '+year;
   return String(year);
 }
 

@@ -204,11 +204,8 @@ body.is-owner .empty-add{display:inline-flex;margin:16px auto 0}
 }
 @media(max-width:620px){
   .books-app{padding:10px 12px 14px}
-  .books-header{height:44px}
-  .brand span:last-child{display:none}
-  .account-link{display:none}
-  .header-actions{margin-left:auto}
-  .books-main{height:calc(100% - 44px);padding-top:16px}
+  .books-header{height:54px}
+  .books-main{height:calc(100% - 54px);padding-top:16px}
   .books-intro h1{font-size:48px}
   .books-intro p{font-size:13px;max-width:320px}
   .eyebrow{font-size:10px}
