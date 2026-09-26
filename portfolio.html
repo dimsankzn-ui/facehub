@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Портфолио — Дим Саныч</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/portfolio.css">
+</head>
+<body>
+<div class="portfolio-app">
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient-ring"></div>
+    <div class="ambient-glow"></div>
+    <div class="ambient-line"></div>
+  </div>
+
+  <header class="portfolio-header">
+    <a class="brand" href="index.html">
+      <span class="logo">ДС</span>
+      <span>Дим Саныч</span>
+    </a>
+
+    <nav class="page-nav" aria-label="Основная навигация">
+      <a href="index.html">Главная</a>
+      <a href="books.html">Книги</a>
+      <a href="music.html">Музыка</a>
+      <a href="poetry.html">Стихи</a>
+      <a href="blog.html">Блог</a>
+    </nav>    <button class="account-link active" id="logoutButton" type="button">Выйти</button>
+  </header>
+
+  <main class="portfolio-main">
+    <section class="portfolio-intro">
+      <div>
+        <div class="eyebrow"><i></i> личное пространство</div>
+        <h1>Портфолио</h1>
+        <p>Профиль, персональный ID и данные вашей учётной записи.</p>
+      </div>
+      <div class="profile-state" id="profileState">Загрузка профиля…</div>
+    </section>
+
+    <section class="portfolio-scroll">
+      <div class="profile-grid">
+        <article class="identity-card">
+          <div class="avatar-wrap" id="avatarOpen" title="Открыть фотографию">
+            <img class="avatar" id="profileAvatar" alt="Фотография профиля">
+            <div class="avatar-fallback" id="avatarFallback">ДС</div>
+          </div>
+
+          <label class="photo-button">
+            Изменить фото
+            <input id="avatarInput" type="file" accept="image/jpeg,image/png,image/webp">
+          </label>
+
+          <div class="identity-copy">
+            <div class="identity-role" id="roleLabel">Пользователь</div>
+            <h2 id="displayName">Профиль</h2>
+            <p id="displayEmail">—</p>
+          </div>
+
+          <button class="user-code" id="copyUserCode" type="button" title="Скопировать ID">
+            <span>Персональный ID</span>
+            <strong id="userCode">--------</strong>
+            <small>Нажмите, чтобы скопировать</small>
+          </button>
+        </article>        <article class="details-card">
+          <div class="details-head">
+            <div>
+              <span>Основные сведения</span>
+              <h2>О пользователе</h2>
+            </div>
+            <span class="account-status"><i></i> активная учётная запись</span>
+          </div>
+
+          <form id="profileForm" class="profile-form">
+            <div class="field-grid">
+              <label class="field">
+                <span>Имя</span>
+                <input id="firstName" type="text" autocomplete="given-name" placeholder="Имя">
+              </label>
+              <label class="field">
+                <span>Фамилия</span>
+                <input id="lastName" type="text" autocomplete="family-name" placeholder="Фамилия">
+              </label>
+              <label class="field">
+                <span>Отчество</span>
+                <input id="patronymic" type="text" placeholder="Необязательно">
+              </label>
+              <label class="field">
+                <span>Дата рождения</span>
+                <input id="dob" type="text" inputmode="numeric" maxlength="10" placeholder="ДД.ММ.ГГГГ">
+              </label>
+              <label class="field field-wide">
+                <span>Город</span>
+                <input id="city" type="text" autocomplete="address-level2" placeholder="Город">
+              </label>
+            </div>
+
+            <div class="form-actions">
+              <span class="form-message" id="formMessage" aria-live="polite"></span>
+              <button class="primary-button" type="submit">Сохранить изменения</button>
+            </div>
+          </form>
+
+          <div class="account-info" aria-label="Данные учётной записи">
+            <div><span>Email</span><strong id="accountEmail">—</strong></div>
+            <div><span>ID записи</span><strong id="accountId">—</strong></div>
+            <div><span>Роль</span><strong id="accountRole">—</strong></div>
+            <div><span>Дата регистрации</span><strong id="createdAt">—</strong></div>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+</div><div class="image-modal" id="imageModal" aria-hidden="true">
+  <div class="image-modal-card">
+    <button class="modal-close" id="imageModalClose" type="button" aria-label="Закрыть">×</button>
+    <img id="fullAvatar" alt="Фотография профиля в полном размере">
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="assets/js/portfolio.js" defer></script>
+</body>
+</html>

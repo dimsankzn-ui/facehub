@@ -35,6 +35,11 @@
       document.body.classList.add('is-authenticated');
       document.body.classList.toggle('is-owner', role === 'owner');
 
+      document.querySelectorAll('a[href="portfolio.html"]').forEach((link) => {
+        link.href = 'portfolio.html';
+        if (link.textContent.trim() === 'Личный кабинет') link.textContent = 'Портфолио';
+      });
+
       if (previousRole !== role) location.reload();
     } catch {
       // При временной недоступности API оставляем страницу доступной как публичную.
