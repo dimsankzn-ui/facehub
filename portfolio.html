@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Портфолио — Дим Саныч</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/portfolio.css">
+<link rel="stylesheet" href="assets/css/portfolio.css?v=20260927-3">
 </head>
 <body>
 <div class="portfolio-app">
@@ -111,6 +111,17 @@
           </div>
         </article>
       </div>
+
+      <section class="admin-users" id="adminUsers" hidden>
+        <div class="admin-users-head">
+          <div>
+            <span>Администрирование</span>
+            <h2>Пользователи</h2>
+          </div>
+          <div class="users-count" id="usersCount">0 пользователей</div>
+        </div>
+        <div class="users-list" id="usersList" aria-live="polite"></div>
+      </section>
     </section>
   </main>
 </div><div class="image-modal" id="imageModal" aria-hidden="true">
@@ -121,6 +132,7 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="assets/js/portfolio.js?v=20260927-2" defer></script>
+<script src="assets/js/portfolio.js?v=20260927-3" defer></script>
+<script src="assets/js/portfolio-admin.js?v=20260927-3" defer></script>
 </body>
 </html>
