@@ -63,7 +63,7 @@
           </label>
 
           <div class="form-row">
-            <label class="remember"><input type="checkbox"> <span>Запомнить меня</span></label>
+            <span class="remember">Сессия хранится до 72 часов</span>
             <button class="text-button" type="button" id="forgotButton">Забыли пароль?</button>
           </div>
 
@@ -118,7 +118,18 @@
         <p class="switch-copy">Уже есть аккаунт? <button type="button" data-switch="login">Войти</button></p>
       </div>
 
-      <div class="demo-note">Сейчас это интерфейс прототипа. Реальная авторизация будет подключена к серверу и базе данных.</div>
+      <div class="form-view" id="form-session">
+        <div class="form-heading">
+          <h2>Вы вошли</h2>
+          <p id="sessionIdentity">Активная учётная запись</p>
+        </div>
+        <div class="session-actions">
+          <a class="submit-button session-link" href="index.html">Продолжить</a>
+          <button class="secondary-button" type="button" id="logoutButton">Выйти</button>
+        </div>
+      </div>
+
+      <div class="demo-note">Авторизация подключена к действующей базе пользователей сайта.</div>
     </section>
   </main>
 </div>
@@ -130,8 +141,8 @@
       <h2 id="consentTitle">Согласие на обработку персональных данных</h2>
     </div>
     <div class="dialog-copy">
-      <p>В рабочей версии здесь будет размещён полный текст согласия с реальными сведениями об операторе, целями и составом обрабатываемых данных, сроками хранения и порядком отзыва.</p>
-      <p>Факт согласия, версия документа и дата подтверждения должны сохраняться отдельно от данных регистрации.</p>
+      <p>Регистрация уже использует действующую базу пользователей сайта. Полный текст согласия с реальными сведениями об операторе, целями, составом данных, сроками хранения и порядком отзыва нужно разместить здесь отдельным документом.</p>
+      <p>Отдельная фиксация версии согласия и даты подтверждения в базе пока не реализована и должна быть добавлена до полноценного публичного запуска регистрации.</p>
     </div>
     <button class="submit-button" type="button" id="consentClose">Понятно</button>
   </div>

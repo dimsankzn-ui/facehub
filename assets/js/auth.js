@@ -57,6 +57,55 @@ function toast(message) {
   window.__toastTimer = setTimeout(() => node.classList.remove('show'), 2200);
 }
 
+async function api(action, data = {}) {
+  const response = await fetch('api.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    credentials: 'same-origin',
+    body: new URLSearchParams({ action, ...data }).toString()
+  });
+
+  if (!response.ok) throw new Error('Сервер авторизации недоступен');
+  return response.json();
+}
+
+function saveLocalAuth(auth) {
+  if (!auth?.logged_in) return;
+  sessionStorage.setItem('facehubDemoRole', auth.role === 'admin' ? 'owner' : 'user');
+  sessionStorage.setItem('facehubDemoEmail', auth.email || '');
+}
+
+function clearLocalAuth() {
+  sessionStorage.removeItem('facehubDemoRole');
+  sessionStorage.removeItem('facehubDemoEmail');
+}
+
+function showSession(auth) {
+  document.querySelector('.auth-app').classList.remove('register-mode');
+  document.querySelector('.tabs').hidden = true;
+  document.querySelectorAll('.form-view').forEach((view) => view.classList.remove('active'));
+  $('#form-session').classList.add('active');
+
+  const name = [auth.first_name, auth.last_name].filter(Boolean).join(' ').trim();
+  const identity = name || auth.email || 'Учётная запись';
+  $('#sessionIdentity').textContent = auth.role === 'admin' ? identity + ' · владелец' : identity;
+}
+
+async function checkExistingSession() {
+  try {
+    const auth = await api('check_auth');
+    if (!auth.logged_in) {
+      clearLocalAuth();
+      return false;
+    }
+    saveLocalAuth(auth);
+    showSession(auth);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 document.querySelectorAll('.tab').forEach((tab) => {
   tab.addEventListener('click', () => switchTab(tab.dataset.tab));
 });
@@ -76,7 +125,7 @@ document.querySelectorAll('.password-toggle').forEach((button) => {
 });
 
 $('#forgotButton').addEventListener('click', () => {
-  toast('Восстановление пароля будет подключено вместе с серверной авторизацией');
+  toast('Восстановление пароля на действующем сайте пока недоступно');
 });
 
 $('#consentOpen').addEventListener('click', () => {
@@ -95,30 +144,39 @@ $('#consentDialog').addEventListener('click', (event) => {
   }
 });
 
-$('#loginForm').addEventListener('submit', (event) => {
+$('#loginForm').addEventListener('submit', async (event) => {
   event.preventDefault();
   const email = $('#loginEmail').value.trim().toLowerCase();
   const password = $('#loginPassword').value;
+  const button = $('#loginForm button[type="submit"]');
 
   if (!email || !password) {
     setMessage('loginMessage', 'Заполните электронную почту и пароль.', 'error');
     return;
   }
 
-  setMessage('loginMessage', 'Вход выполнен. Открываю личное пространство…', 'success');
+  button.disabled = true;
+  setMessage('loginMessage', 'Проверяю данные…');
 
-  if (email === 'dimsan.kzn@gmail.com') {
-    sessionStorage.setItem('facehubDemoRole', 'owner');
-    setTimeout(() => location.href = 'index.html', 450);
-    return;
+  try {
+    const result = await api('login', { email, password });
+    if (!result.success) {
+      setMessage('loginMessage', result.message || 'Не удалось войти.', 'error');
+      return;
+    }
+
+    const auth = await api('check_auth');
+    saveLocalAuth(auth);
+    setMessage('loginMessage', 'Вход выполнен. Открываю личное пространство…', 'success');
+    setTimeout(() => location.href = 'index.html', 350);
+  } catch {
+    setMessage('loginMessage', 'Не удалось связаться с сервером авторизации.', 'error');
+  } finally {
+    button.disabled = false;
   }
-
-  sessionStorage.setItem('facehubDemoRole', 'user');
-  sessionStorage.setItem('facehubDemoEmail', email);
-  setTimeout(() => location.href = 'index.html', 450);
 });
 
-$('#registerForm').addEventListener('submit', (event) => {
+$('#registerForm').addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const name = $('#registerName').value.trim();
@@ -126,6 +184,7 @@ $('#registerForm').addEventListener('submit', (event) => {
   const password = $('#registerPassword').value;
   const repeat = $('#registerPasswordRepeat').value;
   const consent = $('#personalDataConsent').checked;
+  const button = $('#registerForm button[type="submit"]');
 
   if (!name || !email || !password || !repeat) {
     setMessage('registerMessage', 'Заполните все поля.', 'error');
@@ -147,17 +206,48 @@ $('#registerForm').addEventListener('submit', (event) => {
     return;
   }
 
-  sessionStorage.setItem('facehubDemoEmail', email);
-  setMessage('registerMessage', 'Аккаунт создан в демонстрационном режиме. Теперь войдите.', 'success');
-  $('#loginEmail').value = email;
+  button.disabled = true;
+  setMessage('registerMessage', 'Создаю учётную запись…');
 
-  setTimeout(() => {
+  try {
+    const result = await api('register', { email, password });
+    if (!result.success) {
+      setMessage('registerMessage', result.message || 'Не удалось создать аккаунт.', 'error');
+      return;
+    }
+
+    await api('update_profile', {
+      first_name: name,
+      patronymic: '',
+      last_name: '',
+      dob: '',
+      city: ''
+    });
+
+    const auth = await api('check_auth');
+    saveLocalAuth(auth);
+    setMessage('registerMessage', 'Аккаунт создан. Открываю личное пространство…', 'success');
+    setTimeout(() => location.href = 'index.html', 450);
+  } catch {
+    setMessage('registerMessage', 'Не удалось связаться с сервером авторизации.', 'error');
+  } finally {
+    button.disabled = false;
+  }
+});
+
+$('#logoutButton').addEventListener('click', async () => {
+  try {
+    await api('logout');
+  } finally {
+    clearLocalAuth();
+    document.querySelector('.tabs').hidden = false;
+    $('#form-session').classList.remove('active');
     switchTab('login');
-    $('#loginPassword').focus();
-  }, 650);
+    toast('Вы вышли из учётной записи');
+  }
 });
 
 const initialTab = new URLSearchParams(location.search).get('mode');
-if (initialTab === 'register') {
-  switchTab('register');
-}
+checkExistingSession().then((loggedIn) => {
+  if (!loggedIn && initialTab === 'register') switchTab('register');
+});
