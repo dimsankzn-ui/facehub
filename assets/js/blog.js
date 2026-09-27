@@ -1,279 +1,712 @@
 const $ = (selector) => document.querySelector(selector);
-const POSTS_KEY = 'facehubDemoBlogPosts';
-const TAGS_KEY = 'facehubDemoBlogTags';
 
-let activeTag = 'Все';
+let auth = { logged_in: false, role: 'guest' };
+let posts = [];
+let statusFilter = 'all';
 let searchQuery = '';
 let editingPostId = null;
 let currentViewerPostId = null;
+let coverDeleted = false;
+let draggedBlock = null;
+let dropMarker = null;
 
-const runtimeCoverUrls = new Map();
-const runtimeBlockUrls = new Map();
-
-function isOwner(){ return sessionStorage.getItem('facehubDemoRole') === 'owner'; }
-function uid(){ return crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2); }
-function read(key,fallback){ try{return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback));}catch{return fallback;} }
-function write(key,value){ localStorage.setItem(key,JSON.stringify(value)); }
-
-function getTags(){
-  const tags=read(TAGS_KEY,[]);
-  if(tags.length)return tags;
-  const defaults=[
-    {id:'thoughts',name:'Мысли',description:''},
-    {id:'projects',name:'Проекты',description:''},
-    {id:'personal',name:'Личное',description:''},
-    {id:'notes',name:'Заметки',description:''}
-  ];
-  write(TAGS_KEY,defaults);return defaults;
+function isOwner() {
+  return auth.logged_in && auth.role === 'admin';
 }
-function getPosts(){ return read(POSTS_KEY,[]); }
-function savePosts(v){ write(POSTS_KEY,v); }
-function saveTags(v){ write(TAGS_KEY,v); }
 
-if(isOwner()) document.body.classList.add('is-owner');
-
-function toast(message){
-  const node=$('#toast');node.textContent=message;node.classList.add('show');
-  clearTimeout(window.__blogToast);window.__blogToast=setTimeout(()=>node.classList.remove('show'),1800);
+function mediaUrl(path) {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+  return new URL(path.replace(/^\//, ''), location.origin + '/').href;
 }
-function formatDate(value){
-  if(!value)return 'Без даты';
-  const d=new Date(value+'T00:00:00');
-  return new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).format(d);
-}
-function tagName(id){ return getTags().find(t=>t.id===id)?.name || 'Без тега'; }
 
-function visiblePosts(){
-  const q=searchQuery.toLowerCase();
-  return [...getPosts()].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).filter(post=>{
-    const tagOk=activeTag==='Все'||tagName(post.tagId)===activeTag;
-    const hay=[post.title,post.excerpt,...(post.blocks||[]).map(b=>b.type==='text'?b.text:'')].join(' ').toLowerCase();
-    return tagOk&&(!q||hay.includes(q));
+function fileName(path) {
+  if (!path) return '';
+  try { return decodeURIComponent(path.split('/').pop()); }
+  catch { return path.split('/').pop(); }
+}
+
+function isVideoPath(path) {
+  return /\.(mp4|mov|webm|m4v)(?:$|[?#])/i.test(path || '');
+}
+
+function uid() {
+  return crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2);
+}
+
+async function api(action, data = {}) {
+  const response = await fetch('api.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    credentials: 'same-origin',
+    body: new URLSearchParams({ action, ...data }).toString()
+  });
+  if (!response.ok) throw new Error('Ошибка сервера');
+  return response.json();
+}
+
+async function apiForm(formData) {
+  const response = await fetch('api.php', {
+    method: 'POST',
+    credentials: 'same-origin',
+    body: formData
+  });
+  if (!response.ok) throw new Error('Ошибка загрузки');
+  return response.json();
+}
+
+function toast(message) {
+  const node = $('#toast');
+  node.textContent = message;
+  node.classList.add('show');
+  clearTimeout(window.__blogToast);
+  window.__blogToast = setTimeout(() => node.classList.remove('show'), 2200);
+}
+
+function formatDate(value) {
+  if (!value) return 'Без даты';
+  const parsed = new Date(String(value).replace(' ', 'T'));
+  if (Number.isNaN(parsed.getTime())) return value;
+  return new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' }).format(parsed);
+}
+
+function statusName(status) {
+  return status === 'draft' ? 'Черновик' : 'Публикация';
+}
+
+function parseBlocks(content) {
+  try {
+    const value = JSON.parse(content || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch {
+    return content ? [{ type: 'text', value: content }] : [];
+  }
+}
+
+function postText(post) {
+  const pieces = [post.title || '', post.snippet || ''];
+  parseBlocks(post.content).forEach((block) => {
+    if (block.type === 'text') pieces.push(block.value || '');
+  });
+  return pieces.join(' ').toLowerCase();
+}
+
+function visiblePosts() {
+  const query = searchQuery.toLowerCase();
+  return posts.filter((post) => {
+    const statusOk = statusFilter === 'all' || post.status === statusFilter;
+    const searchOk = !query || postText(post).includes(query);
+    return statusOk && searchOk;
   });
 }
 
-function renderTags(){
-  const tags=getTags();
-  const filters=$('#tagFilters');filters.innerHTML='';
-  ['Все',...tags.map(t=>t.name)].forEach(name=>{
-    const btn=document.createElement('button');btn.className='filter'+(name===activeTag?' active':'');btn.textContent=name;
-    btn.addEventListener('click',()=>{activeTag=name;render();});filters.appendChild(btn);
-  });
-
-  const select=$('#postTag');const current=select.value;select.innerHTML='';
-  tags.forEach(tag=>{const o=document.createElement('option');o.value=tag.id;o.textContent=tag.name;select.appendChild(o);});
-  if([...select.options].some(o=>o.value===current))select.value=current;
-
-  const manager=$('#tagManagerList');manager.innerHTML='';
-  tags.forEach(tag=>{
-    const row=document.createElement('div');row.className='tag-row';
-    row.innerHTML='<span></span><button type="button" class="rename">✎</button><button type="button" class="delete">×</button>';
-    row.querySelector('span').textContent=tag.name;
-    row.querySelector('.rename').addEventListener('click',()=>{
-      const next=prompt('Новое название тега',tag.name);if(!next?.trim())return;
-      const items=getTags();const item=items.find(t=>t.id===tag.id);item.name=next.trim();saveTags(items);if(activeTag===tag.name)activeTag=item.name;render();
-    });
-    row.querySelector('.delete').addEventListener('click',()=>{
-      const posts=getPosts();if(posts.some(p=>p.tagId===tag.id)){toast('Сначала смените тег у публикаций');return;}
-      saveTags(getTags().filter(t=>t.id!==tag.id));if(activeTag===tag.name)activeTag='Все';render();
-    });
-    manager.appendChild(row);
-  });
-
-  $('#tagPreview').innerHTML=tags.map(t=>'<span></span>').join('');
-  [...$('#tagPreview').children].forEach((node,i)=>node.textContent=tags[i].name);
+function createVideo(src, className = '') {
+  const video = document.createElement('video');
+  video.className = className;
+  video.src = mediaUrl(src);
+  video.muted = true;
+  video.loop = true;
+  video.playsInline = true;
+  video.autoplay = true;
+  video.preload = 'metadata';
+  video.setAttribute('aria-hidden', 'true');
+  video.play().catch(() => {});
+  return video;
 }
 
-function render(){
-  renderTags();
-  const posts=visiblePosts();
-  $('#postCount').textContent=posts.length+' пост'+(posts.length===1?'':'ов');
-  $('#feedEmpty').classList.toggle('show',posts.length===0);
+function renderCover(container, path, mode = 'featured') {
+  container.querySelectorAll('.cover-media').forEach((node) => node.remove());
+  container.style.backgroundImage = '';
+  container.classList.remove('has-video');
 
-  const featured=posts[0]||null;
-  $('#readFeatured').disabled=!featured;
-  $('#editFeatured').disabled=!featured;
-  if(featured){
-    $('#featuredTag').textContent=tagName(featured.tagId);
-    $('#featuredDate').textContent=formatDate(featured.date);
-    $('#featuredTitle').textContent=featured.title;
-    $('#featuredExcerpt').textContent=featured.excerpt||'';
-    const cover=runtimeCoverUrls.get(featured.id);
-    $('#featuredCover').style.backgroundImage=cover?`linear-gradient(180deg,rgba(14,22,32,.04),rgba(14,22,32,.58)),url("${cover}")`:'';
-  } else {
-    $('#featuredTag').textContent='—';$('#featuredDate').textContent='—';$('#featuredTitle').textContent=searchQuery?'Ничего не найдено':'Публикаций пока нет';
-    $('#featuredExcerpt').textContent=searchQuery?'Попробуйте изменить запрос.':'Когда появится первая публикация, она будет показана здесь.';$('#featuredCover').style.backgroundImage='';
+  if (!path) return;
+
+  if (isVideoPath(path)) {
+    container.classList.add('has-video');
+    container.prepend(createVideo(path, 'cover-media'));
+    return;
   }
 
-  const list=$('#postList');list.innerHTML='';
-  posts.slice(1,6).forEach(post=>{
-    const item=document.createElement('article');item.className='post';
-    item.innerHTML='<time></time><strong></strong><p></p><span class="topic"></span><button class="post-edit" type="button">✎</button>';
-    item.querySelector('time').textContent=formatDate(post.date);
-    item.querySelector('strong').textContent=post.title;
-    item.querySelector('p').textContent=post.excerpt||'';
-    item.querySelector('.topic').textContent=tagName(post.tagId);
-    item.addEventListener('click',(e)=>{if(e.target.classList.contains('post-edit'))return;openViewer(post.id);});
-    item.querySelector('.post-edit').addEventListener('click',()=>openEditor(post.id));
+  const overlay = mode === 'viewer'
+    ? 'linear-gradient(180deg,rgba(15,23,32,.03),rgba(15,23,32,.48))'
+    : 'linear-gradient(180deg,rgba(14,22,32,.04),rgba(14,22,32,.58))';
+  container.style.backgroundImage = overlay + ',url("' + mediaUrl(path) + '")';
+}
+
+function renderFilters() {
+  const host = $('#statusFilters');
+  host.replaceChildren();
+  const filters = isOwner()
+    ? [['all', 'Все'], ['published', 'Опубликованные'], ['draft', 'Черновики']]
+    : [['all', 'Все публикации']];
+
+  filters.forEach(([value, label]) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'filter' + (statusFilter === value ? ' active' : '');
+    button.textContent = label;
+    button.addEventListener('click', () => {
+      statusFilter = value;
+      render();
+    });
+    host.appendChild(button);
+  });
+}
+
+function render() {
+  renderFilters();
+  const items = visiblePosts();
+
+  const count = items.length;
+  const countLabel = count % 10 === 1 && count % 100 !== 11
+    ? 'публикация'
+    : count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 12 || count % 100 > 14)
+      ? 'публикации'
+      : 'публикаций';
+  $('#postCount').textContent = count + ' ' + countLabel;
+  $('#feedEmpty').textContent = count === 1 ? 'Других публикаций пока нет.' : 'Публикаций пока нет.';
+  $('#feedEmpty').classList.toggle('show', count <= 1);
+
+  const featured = items[0] || null;
+  $('#readFeatured').disabled = !featured;
+  $('#editFeatured').disabled = !featured;
+
+  if (featured) {
+    $('#featuredTag').textContent = statusName(featured.status);
+    $('#featuredDate').textContent = formatDate(featured.created_at);
+    $('#featuredTitle').textContent = featured.title || 'Без заголовка';
+    $('#featuredExcerpt').textContent = featured.snippet || '';
+    renderCover($('#featuredCover'), featured.cover, 'featured');
+  } else {
+    $('#featuredTag').textContent = '—';
+    $('#featuredDate').textContent = '—';
+    $('#featuredTitle').textContent = searchQuery ? 'Ничего не найдено' : 'Публикаций пока нет';
+    $('#featuredExcerpt').textContent = searchQuery
+      ? 'Попробуйте изменить запрос.'
+      : 'Когда появится первая публикация, она будет показана здесь.';
+    renderCover($('#featuredCover'), '', 'featured');
+  }
+
+  const list = $('#postList');
+  list.replaceChildren();
+
+  items.slice(1).forEach((post) => {
+    const item = document.createElement('article');
+    item.className = 'post';
+
+    const time = document.createElement('time');
+    time.textContent = formatDate(post.created_at);
+    const title = document.createElement('strong');
+    title.textContent = post.title || 'Без заголовка';
+    const excerpt = document.createElement('p');
+    excerpt.textContent = post.snippet || '';
+    const topic = document.createElement('span');
+    topic.className = 'topic';
+    topic.textContent = statusName(post.status);
+
+    item.append(time, title, excerpt, topic);
+
+    if (isOwner()) {
+      const edit = document.createElement('button');
+      edit.type = 'button';
+      edit.className = 'post-edit';
+      edit.textContent = '✎';
+      edit.title = 'Редактировать';
+      edit.addEventListener('click', (event) => {
+        event.stopPropagation();
+        openEditor(Number(post.id));
+      });
+      item.appendChild(edit);
+    }
+
+    item.addEventListener('click', () => openViewer(Number(post.id)));
     list.appendChild(item);
   });
 }
 
-function openOverlay(id){ $('#'+id).classList.add('show');$('#'+id).setAttribute('aria-hidden','false'); }
-function closeOverlay(id){ $('#'+id).classList.remove('show');$('#'+id).setAttribute('aria-hidden','true'); }
-document.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',()=>closeOverlay(btn.dataset.close)));
+async function loadPosts() {
+  const data = await api('get_blogs');
+  if (!data.success) throw new Error('Не удалось загрузить блог');
+  posts = Array.isArray(data.blogs) ? data.blogs : [];
+  render();
+}
 
-$('#blogSearch').addEventListener('input',e=>{searchQuery=e.target.value.trim();render();});
-$('#openTagManager').addEventListener('click',()=>{if(isOwner())openOverlay('tagsOverlay');});
-$('#addTagButton').addEventListener('click',()=>{
-  if(!isOwner())return;const name=$('#newTagName').value.trim();if(!name)return;
-  const tags=getTags();if(tags.some(t=>t.name.toLowerCase()===name.toLowerCase())){toast('Такой тег уже есть');return;}
-  tags.push({id:uid(),name,description:$('#newTagDescription').value.trim()});saveTags(tags);$('#newTagName').value='';$('#newTagDescription').value='';render();
+function openOverlay(id) {
+  $('#' + id).classList.add('show');
+  $('#' + id).setAttribute('aria-hidden', 'false');
+}
+
+function closeOverlay(id) {
+  $('#' + id).classList.remove('show');
+  $('#' + id).setAttribute('aria-hidden', 'true');
+  if (id === 'viewerOverlay') {
+    $('#viewerOverlay').querySelectorAll('video').forEach((video) => video.pause());
+  }
+}
+
+document.querySelectorAll('[data-close]').forEach((button) => {
+  button.addEventListener('click', () => closeOverlay(button.dataset.close));
 });
 
-function defaultTextBlock(){ return {id:uid(),type:'text',text:''}; }
-function resetEditor(){
-  editingPostId=null;$('#postForm').reset();$('#postDate').value=new Date().toISOString().slice(0,10);
-  $('#editorKicker').textContent='Новая публикация';$('#editorTitle').textContent='Добавить пост';$('#savePostButton').textContent='Опубликовать';
-  $('#postCoverPreview').style.backgroundImage='';$('#postCoverPreview').textContent='＋';$('#postCoverName').textContent='JPG, PNG, WEBP';
-  $('#blocksList').innerHTML='';appendBlock(defaultTextBlock());renderTags();
-}
-function openEditor(id=null){
-  if(!isOwner())return;resetEditor();
-  if(id){
-    const post=getPosts().find(p=>p.id===id);if(!post)return;editingPostId=id;
-    $('#editorKicker').textContent='Редактирование';$('#editorTitle').textContent='Редактировать пост';$('#savePostButton').textContent='Сохранить';
-    $('#postTitle').value=post.title||'';$('#postTag').value=post.tagId||'';$('#postDate').value=post.date||'';$('#postExcerpt').value=post.excerpt||'';
-    $('#blocksList').innerHTML='';(post.blocks?.length?post.blocks:[defaultTextBlock()]).forEach(appendBlock);
+document.querySelectorAll('.overlay').forEach((overlay) => {
+  overlay.addEventListener('click', (event) => {
+    if (event.target === overlay) closeOverlay(overlay.id);
+  });
+});
+
+$('#blogSearch').addEventListener('input', (event) => {
+  searchQuery = event.target.value.trim();
+  render();
+});
+
+async function openViewer(id) {
+  try {
+    const data = await api('get_blog_details', { blog_id: id });
+    if (!data.success || !data.blog) throw new Error();
+
+    const post = data.blog;
+    currentViewerPostId = Number(post.id);
+    $('#viewerTitleMini').textContent = post.title || 'Публикация';
+    $('#viewerTitle').textContent = post.title || 'Публикация';
+    $('#viewerMeta').textContent = statusName(post.status) + ' · ' + formatDate(post.created_at);
+    renderCover($('#viewerHero'), post.cover, 'viewer');
+
+    const host = $('#viewerBlocks');
+    host.replaceChildren();
+
+    parseBlocks(post.content).forEach((block) => {
+      const section = document.createElement('section');
+      section.className = 'content-block';
+
+      if (block.type === 'text') {
+        section.classList.add('text-block');
+        section.textContent = block.value || '';
+      } else if (block.type === 'image' || block.type === 'photo') {
+        const image = document.createElement('div');
+        image.className = 'image-block';
+        if (block.value) image.style.backgroundImage = 'url("' + mediaUrl(block.value) + '")';
+        section.appendChild(image);
+      } else if (block.type === 'video') {
+        const box = document.createElement('div');
+        box.className = 'video-block';
+        if (block.value) {
+          const video = document.createElement('video');
+          video.src = mediaUrl(block.value);
+          video.controls = true;
+          video.preload = 'metadata';
+          video.playsInline = true;
+          box.appendChild(video);
+        } else {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'video-placeholder';
+          placeholder.textContent = '▶';
+          box.appendChild(placeholder);
+        }
+        section.appendChild(box);
+      }
+
+      host.appendChild(section);
+    });
+
+    $('#viewerScroll').scrollTop = 0;
+    openOverlay('viewerOverlay');
+  } catch {
+    toast('Не удалось открыть публикацию');
   }
+}
+
+$('#readFeatured').addEventListener('click', () => {
+  const post = visiblePosts()[0];
+  if (post) openViewer(Number(post.id));
+});
+
+$('#sharePost').addEventListener('click', async () => {
+  const post = posts.find((item) => Number(item.id) === currentViewerPostId);
+  if (!post) return;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: post.title, text: post.snippet || '', url: location.href });
+    } else {
+      await navigator.clipboard.writeText(location.href);
+      toast('Адрес страницы скопирован');
+    }
+  } catch {}
+});
+
+function resetCoverPreview() {
+  $('#postCoverPreview').style.backgroundImage = '';
+  $('#postCoverPreview').textContent = '＋';
+  $('#postCoverName').textContent = 'JPG, PNG, WEBP, MOV, MP4, WEBM';
+  $('#removePostCover').hidden = true;
+  $('#removePostCover').textContent = 'Убрать обложку';
+  coverDeleted = false;
+}
+
+function showExistingCover(path) {
+  if (!path) {
+    resetCoverPreview();
+    return;
+  }
+
+  $('#removePostCover').hidden = false;
+  $('#postCoverName').textContent = 'Сейчас: ' + fileName(path);
+
+  if (isVideoPath(path)) {
+    $('#postCoverPreview').style.backgroundImage = '';
+    $('#postCoverPreview').textContent = '▶';
+  } else {
+    $('#postCoverPreview').style.backgroundImage = 'url("' + mediaUrl(path) + '")';
+    $('#postCoverPreview').textContent = '';
+  }
+}
+
+function resetEditor() {
+  editingPostId = null;
+  coverDeleted = false;
+  $('#postForm').reset();
+  $('#postStatus').value = 'published';
+  $('#editorKicker').textContent = 'Новая публикация';
+  $('#editorTitle').textContent = 'Добавить пост';
+  $('#savePostButton').textContent = 'Сохранить';
+  $('#deletePostButton').hidden = true;
+  resetCoverPreview();
+  $('#blocksList').replaceChildren();
+  appendBlock({ type: 'text', value: '' });
+}
+
+function openEditor(id = null) {
+  if (!isOwner()) return;
+
+  resetEditor();
+
+  if (id !== null) {
+    const post = posts.find((item) => Number(item.id) === Number(id));
+    if (!post) return;
+
+    editingPostId = Number(post.id);
+    $('#editorKicker').textContent = post.status === 'draft' ? 'Черновик' : 'Редактирование';
+    $('#editorTitle').textContent = 'Редактировать публикацию';
+    $('#postTitle').value = post.title || '';
+    $('#postStatus').value = post.status === 'draft' ? 'draft' : 'published';
+    $('#deletePostButton').hidden = false;
+    showExistingCover(post.cover);
+
+    const blocks = parseBlocks(post.content);
+    $('#blocksList').replaceChildren();
+    (blocks.length ? blocks : [{ type: 'text', value: '' }]).forEach(appendBlock);
+  }
+
   openOverlay('editorOverlay');
 }
-$('#openPostEditor').addEventListener('click',()=>openEditor());
-$('#editFeatured').addEventListener('click',()=>{const p=visiblePosts()[0];if(p)openEditor(p.id);});
 
-$('#postCover').addEventListener('change',()=>{
-  const f=$('#postCover').files[0];if(!f)return;const url=URL.createObjectURL(f);
-  $('#postCoverPreview').style.backgroundImage=`url("${url}")`;$('#postCoverPreview').textContent='';$('#postCoverName').textContent=f.name;
+$('#openPostEditor').addEventListener('click', () => openEditor());
+$('#editFeatured').addEventListener('click', () => {
+  const post = visiblePosts()[0];
+  if (post) openEditor(Number(post.id));
 });
 
-function blockMarkup(block){
-  if(block.type==='text'){
-    return `<article class="block" draggable="true" data-block-id="${block.id}" data-type="text">
+$('#postCover').addEventListener('change', () => {
+  const file = $('#postCover').files?.[0];
+  if (!file) return;
+
+  coverDeleted = false;
+  $('#removePostCover').hidden = false;
+  $('#removePostCover').textContent = 'Убрать обложку';
+  $('#postCoverName').textContent = file.name;
+
+  const preview = URL.createObjectURL(file);
+  if (file.type.startsWith('video/') || isVideoPath(file.name)) {
+    $('#postCoverPreview').style.backgroundImage = '';
+    $('#postCoverPreview').textContent = '▶';
+  } else {
+    $('#postCoverPreview').style.backgroundImage = 'url("' + preview + '")';
+    $('#postCoverPreview').textContent = '';
+  }
+});
+
+$('#removePostCover').addEventListener('click', () => {
+  const existing = posts.find((item) => Number(item.id) === editingPostId);
+
+  if (coverDeleted) {
+    coverDeleted = false;
+    $('#removePostCover').textContent = 'Убрать обложку';
+    if (existing?.cover) showExistingCover(existing.cover);
+    return;
+  }
+
+  coverDeleted = true;
+  $('#postCover').value = '';
+  $('#postCoverPreview').style.backgroundImage = '';
+  $('#postCoverPreview').textContent = '×';
+  $('#postCoverName').textContent = 'Обложка будет удалена';
+  $('#removePostCover').textContent = 'Вернуть обложку';
+});
+
+function normalizeBlockType(type) {
+  return type === 'photo' ? 'image' : type;
+}
+
+function blockMarkup(block) {
+  const type = normalizeBlockType(block.type);
+  const id = block.id || uid();
+
+  if (type === 'text') {
+    return `<article class="block" draggable="true" data-block-id="${id}" data-type="text">
       <div class="drag-handle">⋮⋮</div>
       <div class="block-main"><strong>Текстовый блок</strong><textarea class="block-text" placeholder="Введите текст"></textarea></div>
-      <div class="block-actions"><button class="remove" type="button">×</button></div>
+      <div class="block-actions"><button class="remove" type="button" title="Удалить блок">×</button></div>
     </article>`;
   }
-  const photo=block.type==='photo';const label=photo?'Фотоблок':'Видеоблок';const icon=photo?'▧':'▶';const formats=photo?'JPG, PNG, WEBP':'MP4, WEBM, MOV';
-  return `<article class="block" draggable="true" data-block-id="${block.id}" data-type="${block.type}">
+
+  const image = type === 'image';
+  const label = image ? 'Фотоблок' : 'Видеоблок';
+  const icon = image ? '▧' : '▶';
+  const accept = image ? 'image/*' : 'video/*,.mov,.mp4,.webm';
+  const formats = image ? 'JPG, PNG, WEBP' : 'MP4, WEBM, MOV';
+
+  return `<article class="block" draggable="true" data-block-id="${id}" data-type="${type}">
     <div class="drag-handle">⋮⋮</div>
     <div class="block-main"><strong>${label}</strong>
       <label class="media-box drop-zone">
-        <input class="block-file" type="file" accept="${photo?'image/jpeg,image/png,image/webp':'video/mp4,video/webm,video/quicktime'}" hidden>
+        <input class="block-file" type="file" accept="${accept}" hidden>
         <div class="media-icon">${icon}</div>
-        <div class="media-copy"><strong class="media-name">Загрузить ${photo?'изображение':'видео'}</strong><span>${formats}</span></div>
+        <div class="media-copy"><strong class="media-name">Добавить файл</strong><span>${formats}</span></div>
       </label>
     </div>
-    <div class="block-actions"><button class="remove" type="button">×</button></div>
+    <div class="block-actions"><button class="remove" type="button" title="Удалить блок">×</button></div>
   </article>`;
 }
-function appendBlock(block){
-  $('#blocksList').insertAdjacentHTML('beforeend',blockMarkup(block));
-  const node=$('#blocksList').lastElementChild;
-  if(block.type==='text')node.querySelector('.block-text').value=block.text||'';
-  else{
-    node.dataset.fileName=block.fileName||'';
-    if(block.fileName)node.querySelector('.media-name').textContent=block.fileName;
-    const url=runtimeBlockUrls.get(block.id);
-    if(url&&block.type==='photo')node.querySelector('.media-icon').style.backgroundImage=`url("${url}")`;
+
+function appendBlock(block) {
+  const normalized = { ...block, type: normalizeBlockType(block.type) };
+  $('#blocksList').insertAdjacentHTML('beforeend', blockMarkup(normalized));
+  const node = $('#blocksList').lastElementChild;
+
+  if (normalized.type === 'text') {
+    node.querySelector('.block-text').value = normalized.value || '';
+  } else {
+    node.dataset.path = normalized.value || '';
+    if (normalized.value) {
+      node.querySelector('.media-name').textContent = fileName(normalized.value);
+      if (normalized.type === 'image') {
+        node.querySelector('.media-icon').style.backgroundImage = 'url("' + mediaUrl(normalized.value) + '")';
+        node.querySelector('.media-icon').textContent = '';
+      } else {
+        node.querySelector('.media-icon').textContent = '▶';
+      }
+    }
   }
+
   bindBlock(node);
 }
-function bindBlock(node){
-  node.querySelector('.remove').addEventListener('click',()=>node.remove());
-  const input=node.querySelector('.block-file');
-  if(input)input.addEventListener('change',()=>{
-    const f=input.files[0];if(!f)return;node.dataset.fileName=f.name;runtimeBlockUrls.set(node.dataset.blockId,URL.createObjectURL(f));node.querySelector('.media-name').textContent=f.name;
-    if(node.dataset.type==='photo'){node.querySelector('.media-icon').style.backgroundImage=`url("${runtimeBlockUrls.get(node.dataset.blockId)}")`;node.querySelector('.media-icon').textContent='';}
-  });
-}
-function collectBlocks(){
-  return [...document.querySelectorAll('#blocksList .block')].map(node=>{
-    const base={id:node.dataset.blockId,type:node.dataset.type};
-    if(base.type==='text')base.text=node.querySelector('.block-text').value;
-    else base.fileName=node.dataset.fileName||'';
-    return base;
-  });
-}
 
-$('#openAddBlockMenu').addEventListener('click',()=>$('#addBlockMenu').classList.toggle('show'));
-document.querySelectorAll('[data-add-block]').forEach(btn=>btn.addEventListener('click',()=>{
-  appendBlock({id:uid(),type:btn.dataset.addBlock,text:''});$('#addBlockMenu').classList.remove('show');
-}));
+function bindBlock(node) {
+  node.querySelector('.remove').addEventListener('click', () => node.remove());
 
-let dragged=null,marker=null,ghost=null;
-function interactiveTarget(target){return Boolean(target.closest('textarea,input,select,button,.drop-zone,[contenteditable="true"]'));}
-function makeMarker(){const m=document.createElement('div');m.className='drop-marker';m.textContent='Блок будет перемещён сюда';return m;}
-function makeGhost(block){
-  const g=document.createElement('div');g.className='drag-ghost';
-  const title=block.dataset.type==='text'?'Текстовый блок':block.dataset.type==='photo'?'Фотоблок':'Видеоблок';
-  const detail=block.dataset.type==='text'?(block.querySelector('.block-text')?.value.trim()||'Пустой текстовый блок'):(block.dataset.fileName||'Медиаблок');
-  g.innerHTML='<strong>'+title+'</strong><p></p>';g.querySelector('p').textContent=detail;document.body.appendChild(g);return g;
-}
-$('#blocksList').addEventListener('dragstart',e=>{
-  const block=e.target.closest('.block');if(!block||interactiveTarget(e.target)){e.preventDefault();return;}
-  dragged=block;block.classList.add('dragging');marker=makeMarker();ghost=makeGhost(block);setTimeout(()=>block.after(marker),0);
-  if(e.dataTransfer){e.dataTransfer.effectAllowed='move';const img=new Image();img.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';e.dataTransfer.setDragImage(img,0,0);}
-});
-document.addEventListener('dragover',e=>{
-  if(!dragged)return;e.preventDefault();
-  if(ghost){ghost.style.left=Math.min(innerWidth-590,e.clientX+18)+'px';ghost.style.top=Math.min(innerHeight-100,e.clientY+14)+'px';}
-  const blocks=[...document.querySelectorAll('#blocksList .block:not(.dragging)')];let inserted=false;
-  for(const block of blocks){const r=block.getBoundingClientRect();if(e.clientY<r.top+r.height/2){$('#blocksList').insertBefore(marker,block);inserted=true;break;}}
-  if(!inserted)$('#blocksList').appendChild(marker);
-});
-$('#blocksList').addEventListener('drop',e=>{if(!dragged)return;e.preventDefault();$('#blocksList').insertBefore(dragged,marker);});
-document.addEventListener('dragend',()=>{
-  if(!dragged)return;dragged.classList.remove('dragging');marker?.remove();ghost?.remove();dragged=null;marker=null;ghost=null;
-});
+  const input = node.querySelector('.block-file');
+  if (!input) return;
 
-$('#postForm').addEventListener('submit',e=>{
-  e.preventDefault();if(!isOwner())return;
-  const title=$('#postTitle').value.trim();if(!title)return;
-  const posts=getPosts();let post=posts.find(p=>p.id===editingPostId);const existing=Boolean(post);if(!post){post={id:uid()};posts.push(post);}
-  post.title=title;post.tagId=$('#postTag').value;post.date=$('#postDate').value;post.excerpt=$('#postExcerpt').value.trim();post.blocks=collectBlocks();
-  post.coverFileName=$('#postCover').files[0]?.name||post.coverFileName||'';
-  const cover=$('#postCover').files[0];if(cover)runtimeCoverUrls.set(post.id,URL.createObjectURL(cover));
-  savePosts(posts);closeOverlay('editorOverlay');render();toast(existing?'Публикация обновлена':'Публикация опубликована');
-});
+  input.addEventListener('change', () => {
+    const file = input.files?.[0];
+    if (!file) return;
 
-function openViewer(id){
-  const post=getPosts().find(p=>p.id===id);if(!post)return;currentViewerPostId=id;
-  $('#viewerTitleMini').textContent=post.title;$('#viewerTitle').textContent=post.title;$('#viewerMeta').textContent=tagName(post.tagId)+' · '+formatDate(post.date);
-  const cover=runtimeCoverUrls.get(id);$('#viewerHero').style.backgroundImage=cover?`linear-gradient(180deg,rgba(15,23,32,.03),rgba(15,23,32,.48)),url("${cover}")`:'';
-  const host=$('#viewerBlocks');host.innerHTML='';
-  (post.blocks||[]).forEach(block=>{
-    const section=document.createElement('section');section.className='content-block';
-    if(block.type==='text'){
-      section.classList.add('text-block');section.textContent=block.text||'';
-    }else if(block.type==='photo'){
-      const img=document.createElement('div');img.className='image-block';const url=runtimeBlockUrls.get(block.id);if(url)img.style.backgroundImage=`url("${url}")`;section.appendChild(img);
-      if(block.fileName){const cap=document.createElement('div');cap.className='media-caption';cap.textContent=block.fileName;section.appendChild(cap);}
-    }else{
-      const box=document.createElement('div');box.className='video-block';const url=runtimeBlockUrls.get(block.id);
-      if(url){const video=document.createElement('video');video.src=url;video.controls=true;video.preload='metadata';box.appendChild(video);}
-      else{box.innerHTML='<div class="video-placeholder">▶</div>';}
-      section.appendChild(box);if(block.fileName){const cap=document.createElement('div');cap.className='media-caption';cap.textContent=block.fileName;section.appendChild(cap);}
+    node.querySelector('.media-name').textContent = file.name;
+
+    if (node.dataset.type === 'image') {
+      const preview = URL.createObjectURL(file);
+      node.querySelector('.media-icon').style.backgroundImage = 'url("' + preview + '")';
+      node.querySelector('.media-icon').textContent = '';
+    } else {
+      node.querySelector('.media-icon').style.backgroundImage = '';
+      node.querySelector('.media-icon').textContent = '▶';
     }
-    host.appendChild(section);
   });
-  $('#viewerScroll').scrollTop=0;openOverlay('viewerOverlay');
 }
-$('#readFeatured').addEventListener('click',()=>{const p=visiblePosts()[0];if(p)openViewer(p.id);});
-$('#sharePost').addEventListener('click',async()=>{
-  const post=getPosts().find(p=>p.id===currentViewerPostId);if(!post)return;
-  const text=post.title+'\n\n'+(post.excerpt||'');
-  try{if(navigator.share)await navigator.share({title:post.title,text});else{await navigator.clipboard.writeText(text);toast('Ссылка на публикацию скопирована');}}catch{}
+
+$('#openAddBlockMenu').addEventListener('click', () => {
+  $('#addBlockMenu').classList.toggle('show');
 });
 
-render();
+document.querySelectorAll('[data-add-block]').forEach((button) => {
+  button.addEventListener('click', () => {
+    appendBlock({ type: normalizeBlockType(button.dataset.addBlock), value: '' });
+    $('#addBlockMenu').classList.remove('show');
+  });
+});
+
+function interactiveTarget(target) {
+  return Boolean(target.closest('textarea,input,select,button,.drop-zone,[contenteditable="true"]'));
+}
+
+function makeDropMarker() {
+  const marker = document.createElement('div');
+  marker.className = 'drop-marker';
+  marker.textContent = 'Блок будет перемещён сюда';
+  return marker;
+}
+
+$('#blocksList').addEventListener('dragstart', (event) => {
+  const block = event.target.closest('.block');
+  if (!block || interactiveTarget(event.target)) {
+    event.preventDefault();
+    return;
+  }
+
+  draggedBlock = block;
+  block.classList.add('dragging');
+  dropMarker = makeDropMarker();
+  setTimeout(() => block.after(dropMarker), 0);
+  if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move';
+});
+
+$('#blocksList').addEventListener('dragover', (event) => {
+  if (!draggedBlock) return;
+  event.preventDefault();
+
+  const blocks = [...document.querySelectorAll('#blocksList .block:not(.dragging)')];
+  const before = blocks.find((block) => {
+    const rect = block.getBoundingClientRect();
+    return event.clientY < rect.top + rect.height / 2;
+  });
+
+  if (before) $('#blocksList').insertBefore(dropMarker, before);
+  else $('#blocksList').appendChild(dropMarker);
+});
+
+$('#blocksList').addEventListener('drop', (event) => {
+  if (!draggedBlock || !dropMarker) return;
+  event.preventDefault();
+  $('#blocksList').insertBefore(draggedBlock, dropMarker);
+});
+
+document.addEventListener('dragend', () => {
+  if (!draggedBlock) return;
+  draggedBlock.classList.remove('dragging');
+  dropMarker?.remove();
+  draggedBlock = null;
+  dropMarker = null;
+});
+
+async function uploadBlockFile(file) {
+  const form = new FormData();
+  form.append('action', 'upload_blog_media');
+  form.append('file', file);
+  const result = await apiForm(form);
+  if (!result.success || !result.url) {
+    throw new Error(result.message || 'Не удалось загрузить медиафайл');
+  }
+  return result.url;
+}
+
+async function serializeBlocks() {
+  const result = [];
+
+  for (const node of document.querySelectorAll('#blocksList .block')) {
+    const type = node.dataset.type;
+
+    if (type === 'text') {
+      const value = node.querySelector('.block-text').value;
+      result.push({ type: 'text', value });
+      continue;
+    }
+
+    let value = node.dataset.path || '';
+    const file = node.querySelector('.block-file')?.files?.[0];
+    if (file) value = await uploadBlockFile(file);
+
+    if (value) result.push({ type, value });
+  }
+
+  return result;
+}
+
+$('#postForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (!isOwner()) return;
+
+  const title = $('#postTitle').value.trim();
+  if (!title) return;
+
+  const button = $('#savePostButton');
+  button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = 'Сохранение…';
+
+  try {
+    const blocks = await serializeBlocks();
+
+    const form = new FormData();
+    form.append('action', 'save_blog');
+    form.append('mode', editingPostId ? 'edit' : 'add');
+    if (editingPostId) form.append('id', String(editingPostId));
+    form.append('title', title);
+    form.append('status', $('#postStatus').value === 'draft' ? 'draft' : 'published');
+    form.append('content', JSON.stringify(blocks));
+    form.append('cover_mode', 'file');
+    form.append('del_cover', coverDeleted ? '1' : '0');
+
+    const cover = $('#postCover').files?.[0];
+    if (cover) form.append('cover', cover);
+
+    const result = await apiForm(form);
+    if (!result.success) throw new Error(result.message || 'Не удалось сохранить публикацию');
+
+    closeOverlay('editorOverlay');
+    await loadPosts();
+    toast(editingPostId ? 'Публикация обновлена' : 'Публикация сохранена');
+  } catch (error) {
+    toast(error.message || 'Ошибка сохранения публикации');
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+});
+
+let deleteArmed = false;
+let deleteTimer = null;
+
+$('#deletePostButton').addEventListener('click', async () => {
+  if (!editingPostId || !isOwner()) return;
+
+  if (!deleteArmed) {
+    deleteArmed = true;
+    $('#deletePostButton').textContent = 'Нажмите ещё раз для удаления';
+    clearTimeout(deleteTimer);
+    deleteTimer = setTimeout(() => {
+      deleteArmed = false;
+      $('#deletePostButton').textContent = 'Удалить публикацию';
+    }, 3500);
+    return;
+  }
+
+  try {
+    const result = await api('delete_blog', { id: editingPostId });
+    if (!result.success) throw new Error(result.message || 'Не удалось удалить публикацию');
+    deleteArmed = false;
+    closeOverlay('editorOverlay');
+    await loadPosts();
+    toast('Публикация удалена');
+  } catch (error) {
+    toast(error.message || 'Ошибка удаления публикации');
+  }
+});
+
+async function init() {
+  try {
+    auth = await api('check_auth');
+  } catch {
+    auth = { logged_in: false, role: 'guest' };
+  }
+
+  document.body.classList.toggle('is-owner', isOwner());
+
+  try {
+    await loadPosts();
+  } catch {
+    posts = [];
+    render();
+    toast('Не удалось загрузить блог');
+  }
+}
+
+init();

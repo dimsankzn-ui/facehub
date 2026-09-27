@@ -146,3 +146,30 @@ body.is-owner .post-edit{display:block}
 @media(max-width:900px){
   .page-nav{display:none}.blog-grid{grid-template-columns:1fr}.feed{display:none}.search{width:210px}.editor{grid-template-columns:230px 1fr}
 }
+
+/* Реальные медиа блога */
+.featured-cover{overflow:hidden}
+.featured-cover .cover-media,
+.hero-post .cover-media{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:0
+}
+.featured-cover.has-video::after,
+.hero-post.has-video::after{
+  content:"";position:absolute;inset:0;z-index:1;
+  background:linear-gradient(180deg,rgba(14,22,32,.05),rgba(14,22,32,.60));
+  pointer-events:none
+}
+.featured-content{z-index:2}
+.hero-post{overflow:hidden}
+.hero-post-copy{z-index:2}
+.edit-featured{z-index:3}
+.post-settings{overflow:auto;scrollbar-width:thin}
+.blocks-stage{overflow:auto;scrollbar-width:thin}
+.blocks-list{height:auto;min-height:100%}
+.cover-remove{
+  width:100%;height:34px;margin-top:7px;border:0;border-radius:10px;
+  background:#eef2f6;color:#8b5c62;font-size:10px
+}
+.modal-actions-spacer{flex:1}
+.action.danger{background:#f3e9ea;color:#965d63}
+.media-icon{background-size:cover;background-position:center}

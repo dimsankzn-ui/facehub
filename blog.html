@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Блог — Дим Саныч</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/blog.css">
+<link rel="stylesheet" href="assets/css/blog.css?v=20260928-1">
 </head>
 <body>
 <div class="blog-app">
@@ -37,8 +37,7 @@
     </section>
 
     <div class="filters-row">
-      <div class="filters" id="tagFilters"></div>
-      <button class="manage-tags" id="openTagManager" type="button">⚙ Настроить теги</button>
+      <div class="filters" id="statusFilters"></div>
     </div>
 
     <section class="blog-grid">
@@ -95,18 +94,22 @@
       <div class="editor">
         <aside class="post-settings">
           <label class="field"><span class="label">Заголовок</span><input id="postTitle" type="text" placeholder="Название публикации" required></label>
-          <label class="field"><span class="label">Тег</span><select id="postTag"></select></label>
-          <label class="field"><span class="label">Дата публикации</span><input id="postDate" type="date"></label>
-          <label class="field"><span class="label">Короткое описание</span><textarea id="postExcerpt" placeholder="Небольшой анонс публикации"></textarea></label>
+          <label class="field"><span class="label">Статус</span>
+            <select id="postStatus">
+              <option value="published">Опубликовано</option>
+              <option value="draft">Черновик</option>
+            </select>
+          </label>
 
           <div>
-            <span class="label">Титульное изображение</span>
+            <span class="label">Титульная обложка</span>
             <label class="cover-mini drop-zone" for="postCover">
-              <input id="postCover" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+              <input id="postCover" type="file" accept="image/*,video/*,.mov,.mp4,.webm" hidden>
               <div class="cover-icon" id="postCoverPreview">＋</div>
-              <strong>Добавить изображение</strong>
-              <small id="postCoverName">JPG, PNG, WEBP</small>
+              <strong>Добавить фото или видео</strong>
+              <small id="postCoverName">JPG, PNG, WEBP, MOV, MP4, WEBM</small>
             </label>
+            <button class="cover-remove" id="removePostCover" type="button" hidden>Убрать обложку</button>
           </div>
         </aside>
 
@@ -132,44 +135,18 @@
       </div>
 
       <div class="modal-actions">
+        <button class="action danger" id="deletePostButton" type="button" hidden>Удалить публикацию</button>
+        <span class="modal-actions-spacer"></span>
         <button class="action soft" type="button" data-close="editorOverlay">Отмена</button>
-        <button class="action primary" id="savePostButton" type="submit">Опубликовать</button>
+        <button class="action primary" id="savePostButton" type="submit">Сохранить</button>
       </div>
     </form>
-  </section>
-</div>
-
-<div class="overlay" id="tagsOverlay" aria-hidden="true">
-  <section class="modal tags-modal">
-    <div class="modal-head">
-      <div><div class="kicker">Структура блога</div><h2>Настроить теги</h2></div>
-      <button class="close" type="button" data-close="tagsOverlay" aria-label="Закрыть">×</button>
-    </div>
-
-    <div class="tags-layout">
-      <div class="tag-list-box">
-        <h3>Текущие теги</h3>
-        <div class="tag-list" id="tagManagerList"></div>
-      </div>
-      <div class="tag-edit-box">
-        <h3>Добавить новый тег</h3>
-        <label class="field"><span class="label">Название</span><input id="newTagName" type="text" placeholder="Например: Путешествия"></label>
-        <label class="field"><span class="label">Короткое описание</span><input id="newTagDescription" type="text" placeholder="Для чего этот тег"></label>
-        <button class="action primary" id="addTagButton" type="button">+ Добавить тег</button>
-        <h3 class="preview-heading">Предпросмотр</h3>
-        <div class="tag-preview" id="tagPreview"></div>
-      </div>
-    </div>
-
-    <div class="modal-actions">
-      <button class="action soft" type="button" data-close="tagsOverlay">Закрыть</button>
-    </div>
   </section>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/js/auth-state.js?v=20260927-2" defer></script>
 <script src="assets/js/account-avatar.js?v=20260927-3" defer></script>
-<script src="assets/js/blog.js" defer></script>
+<script src="assets/js/blog.js?v=20260928-2" defer></script>
 </body>
 </html>
