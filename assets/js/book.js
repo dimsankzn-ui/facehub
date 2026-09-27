@@ -358,6 +358,11 @@ document.querySelectorAll('[data-close]').forEach((button) => {
   button.addEventListener('click', () => closeOverlay(button.dataset.close));
 });
 
+$('#trailerOverlay').addEventListener('click', (event) => {
+  if (event.target.closest('.trailer-frame')) return;
+  closeOverlay('trailerOverlay');
+});
+
 let readerFont = 17;
 $('#fontPlus').addEventListener('click', () => {
   readerFont = Math.min(24, readerFont + 1);

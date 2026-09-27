@@ -170,3 +170,21 @@ body.is-owner .song-actions .download,body.is-owner .song-actions .edit{display:
   .player-buttons{grid-area:controls;justify-content:flex-end}
   .player-close{grid-area:close}
 }
+
+.player{
+  grid-template-columns:44px minmax(130px,1fr) minmax(110px,170px) 76px 220px 26px;
+}
+.player-buttons{gap:6px}
+.player-step{
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(80,103,128,.09);
+  border:1px solid rgba(69,91,114,.10);
+  color:#33495f;font-size:14px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.72);
+}
+.player-step:hover{background:rgba(70,96,123,.16);color:#1e344b;transform:translateY(-1px)}
+@media(max-width:980px) and (min-width:761px){
+  .player{width:min(860px,calc(100vw - 28px));grid-template-columns:40px minmax(110px,1fr) 130px 70px 206px 24px;gap:8px;padding:0 10px}
+  .player-step{width:36px;height:36px}
+  .player-mode{width:28px;height:28px}
+}
