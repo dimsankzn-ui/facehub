@@ -187,12 +187,14 @@ document.addEventListener('click',(e)=>{
   }
 
   const playSong=e.target.closest('[data-play-song]')?.dataset.playSong;
-  if(playSong)playSongById(playSong);
+  if(playSong)playSongById(playSong,'',getSongs().map(song=>song.id));
 
   const playAlbum=e.target.closest('[data-play-album]')?.dataset.playAlbum;
   if(playAlbum){
-    const album=getAlbums().find(a=>a.id===playAlbum);const first=(album?.songIds||[])[0];
-    if(first)playSongById(first,album.title);else toast('В альбоме пока нет песен');
+    const album=getAlbums().find(a=>a.id===playAlbum);
+    const queue=(album?.songIds||[]).filter(id=>getSongs().some(song=>song.id===id));
+    const first=queue[0];
+    if(first)playSongById(first,album.title,queue);else toast('В альбоме пока нет песен');
   }
 
   const download=e.target.closest('[data-download-song]')?.dataset.downloadSong;
@@ -203,22 +205,196 @@ document.addEventListener('click',(e)=>{
   }
 });
 
-let currentPlayingId=null;let playing=true;let fakeTimer=null;let fakeProgress=0;
-function playSongById(id,albumTitle){
-  const song=getSongs().find(s=>s.id===id);if(!song)return;
-  currentPlayingId=id;playing=true;fakeProgress=0;
-  $('#playerTitle').textContent=song.title;$('#playerSubtitle').textContent=albumTitle||albumTitleById(song.albumId)||'Онлайн-воспроизведение';
-  $('#playerCover').textContent='♪';const cover=runtimeCoverUrls.get('song:'+id);if(cover){$('#playerCover').style.backgroundImage=`url("${cover}")`;$('#playerCover').textContent='';}else $('#playerCover').style.backgroundImage='';
-  $('#player').classList.add('show');$('#player').setAttribute('aria-hidden','false');$('#playerToggle').textContent='Ⅱ';
-  clearInterval(fakeTimer);
-  const audioUrl=runtimeAudioUrls.get(id);
-  if(audioUrl){const audio=$('#audioElement');audio.src=audioUrl;audio.play().catch(()=>{});}
-  fakeTimer=setInterval(()=>{if(!playing)return;fakeProgress=Math.min(100,fakeProgress+.4);$('#playerProgress').style.width=fakeProgress+'%';if(fakeProgress>=100)clearInterval(fakeTimer);},100);
+let currentPlayingId=null;
+let currentQueue=[];
+let currentQueueLabel='';
+let playing=false;
+let repeatEnabled=false;
+let shuffleEnabled=false;
+let fakeTimer=null;
+let fakeElapsed=0;
+let fakeDuration=222;
+
+const audio=$('#audioElement');
+
+function formatTime(seconds){
+  if(!Number.isFinite(seconds)||seconds<0)return '0:00';
+  const whole=Math.floor(seconds),minutes=Math.floor(whole/60),rest=String(whole%60).padStart(2,'0');
+  return minutes+':'+rest;
 }
+
+function parseDuration(value){
+  if(!value||!/^\d+:\d{2}$/.test(value))return 222;
+  const [minutes,seconds]=value.split(':').map(Number);
+  return minutes*60+seconds;
+}
+
+function setPlayerPosition(current,total){
+  const duration=Math.max(1,total||0);
+  $('#playerProgress').style.width=Math.max(0,Math.min(100,(current/duration)*100))+'%';
+  $('#playerTime').textContent=formatTime(current)+' / '+formatTime(total||0);
+}
+
+function stopFakeTimer(){
+  clearInterval(fakeTimer);
+  fakeTimer=null;
+}
+
+function startFakePlayback(song){
+  stopFakeTimer();
+  fakeElapsed=0;
+  fakeDuration=parseDuration(song.duration);
+  setPlayerPosition(0,fakeDuration);
+  fakeTimer=setInterval(()=>{
+    if(!playing)return;
+    fakeElapsed=Math.min(fakeDuration,fakeElapsed+.25);
+    setPlayerPosition(fakeElapsed,fakeDuration);
+    if(fakeElapsed>=fakeDuration){
+      stopFakeTimer();
+      handleTrackEnd();
+    }
+  },250);
+}
+
+function updatePlayerModeButtons(){
+  $('#playerRepeat').classList.toggle('active',repeatEnabled);
+  $('#playerRepeat').setAttribute('aria-pressed',String(repeatEnabled));
+  $('#playerShuffle').classList.toggle('active',shuffleEnabled);
+  $('#playerShuffle').setAttribute('aria-pressed',String(shuffleEnabled));
+}
+
+function playSongById(id,queueLabel='',queueIds=null){
+  const song=getSongs().find(s=>s.id===id);if(!song)return;
+
+  if(Array.isArray(queueIds)&&queueIds.length){
+    currentQueue=queueIds.filter(queueId=>getSongs().some(item=>item.id===queueId));
+    currentQueueLabel=queueLabel||'';
+  }else if(!currentQueue.length||!currentQueue.includes(id)){
+    currentQueue=getSongs().map(item=>item.id);
+    currentQueueLabel='';
+  }
+
+  currentPlayingId=id;
+  playing=true;
+  $('#playerTitle').textContent=song.title;
+  $('#playerSubtitle').textContent=currentQueueLabel||albumTitleById(song.albumId)||'Онлайн-воспроизведение';
+
+  $('#playerCover').textContent='♪';
+  const cover=runtimeCoverUrls.get('song:'+id);
+  if(cover){
+    $('#playerCover').style.backgroundImage=`url("${cover}")`;
+    $('#playerCover').textContent='';
+  }else{
+    $('#playerCover').style.backgroundImage='';
+  }
+
+  $('#player').classList.add('show');
+  $('#player').setAttribute('aria-hidden','false');
+  $('#playerToggle').textContent='Ⅱ';
+  $('#playerToggle').setAttribute('aria-label','Пауза');
+
+  stopFakeTimer();
+  audio.pause();
+  audio.removeAttribute('src');
+  audio.load();
+
+  const audioUrl=runtimeAudioUrls.get(id);
+  if(audioUrl){
+    audio.src=audioUrl;
+    audio.play().catch(()=>{});
+  }else{
+    startFakePlayback(song);
+  }
+}
+
+function queueTarget(direction){
+  if(!currentQueue.length)return null;
+  if(shuffleEnabled&&currentQueue.length>1){
+    const choices=currentQueue.filter(id=>id!==currentPlayingId);
+    return choices[Math.floor(Math.random()*choices.length)]||currentPlayingId;
+  }
+  const index=Math.max(0,currentQueue.indexOf(currentPlayingId));
+  return currentQueue[(index+direction+currentQueue.length)%currentQueue.length];
+}
+
+function nextTrack(){
+  const target=queueTarget(1);
+  if(target)playSongById(target,currentQueueLabel,currentQueue);
+}
+
+function previousTrack(){
+  const target=queueTarget(-1);
+  if(target)playSongById(target,currentQueueLabel,currentQueue);
+}
+
+function handleTrackEnd(){
+  if(!currentPlayingId)return;
+  if(repeatEnabled){
+    playSongById(currentPlayingId,currentQueueLabel,currentQueue);
+    return;
+  }
+  if(currentQueue.length>1){
+    nextTrack();
+    return;
+  }
+  playing=false;
+  $('#playerToggle').textContent='▶';
+  $('#playerToggle').setAttribute('aria-label','Воспроизвести');
+}
+
 $('#playerToggle').addEventListener('click',()=>{
-  playing=!playing;$('#playerToggle').textContent=playing?'Ⅱ':'▶';
-  const audio=$('#audioElement');if(audio.src){playing?audio.play().catch(()=>{}):audio.pause();}
+  if(!currentPlayingId)return;
+  playing=!playing;
+  $('#playerToggle').textContent=playing?'Ⅱ':'▶';
+  $('#playerToggle').setAttribute('aria-label',playing?'Пауза':'Воспроизвести');
+  if(audio.src){
+    playing?audio.play().catch(()=>{}):audio.pause();
+  }
 });
-$('#playerClose').addEventListener('click',()=>{$('#player').classList.remove('show');$('#audioElement').pause();clearInterval(fakeTimer);});
+
+$('#playerPrevious').addEventListener('click',previousTrack);
+$('#playerNext').addEventListener('click',nextTrack);
+
+$('#playerRepeat').addEventListener('click',()=>{
+  repeatEnabled=!repeatEnabled;
+  updatePlayerModeButtons();
+});
+
+$('#playerShuffle').addEventListener('click',()=>{
+  shuffleEnabled=!shuffleEnabled;
+  updatePlayerModeButtons();
+});
+
+$('#playerProgressTrack').addEventListener('click',(event)=>{
+  if(!currentPlayingId)return;
+  const rect=event.currentTarget.getBoundingClientRect();
+  const ratio=Math.max(0,Math.min(1,(event.clientX-rect.left)/rect.width));
+  if(audio.src&&Number.isFinite(audio.duration)){
+    audio.currentTime=audio.duration*ratio;
+  }else{
+    fakeElapsed=fakeDuration*ratio;
+    setPlayerPosition(fakeElapsed,fakeDuration);
+  }
+});
+
+audio.addEventListener('loadedmetadata',()=>setPlayerPosition(audio.currentTime,audio.duration));
+audio.addEventListener('timeupdate',()=>setPlayerPosition(audio.currentTime,audio.duration));
+audio.addEventListener('ended',handleTrackEnd);
+
+$('#playerClose').addEventListener('click',()=>{
+  $('#player').classList.remove('show');
+  $('#player').setAttribute('aria-hidden','true');
+  playing=false;
+  currentPlayingId=null;
+  currentQueue=[];
+  currentQueueLabel='';
+  audio.pause();
+  audio.removeAttribute('src');
+  audio.load();
+  stopFakeTimer();
+  setPlayerPosition(0,0);
+});
+
+updatePlayerModeButtons();
 
 render();

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Музыка — Дим Саныч</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/music.css">
+<link rel="stylesheet" href="assets/css/music.css?v=20260928-2">
 </head>
 <body>
 <div class="music-app">
@@ -157,16 +157,22 @@
 <div class="player" id="player" aria-hidden="true">
   <div class="player-cover" id="playerCover">♪</div>
   <div class="player-copy"><strong id="playerTitle">Композиция</strong><span id="playerSubtitle">Онлайн-воспроизведение</span></div>
-  <div class="player-progress"><i id="playerProgress"></i></div>
-  <span class="player-time" id="playerTime">0:00 / 3:42</span>
-  <button class="player-control" id="playerToggle" type="button">Ⅱ</button>
-  <button class="player-close" id="playerClose" type="button">×</button>
-  <audio id="audioElement"></audio>
+  <div class="player-progress" id="playerProgressTrack" aria-label="Позиция воспроизведения"><i id="playerProgress"></i></div>
+  <span class="player-time" id="playerTime">0:00 / 0:00</span>
+  <div class="player-buttons">
+    <button class="player-mode" id="playerShuffle" type="button" aria-label="Рандом" title="Рандом" aria-pressed="false">⤨</button>
+    <button class="player-step" id="playerPrevious" type="button" aria-label="Назад" title="Назад">‹</button>
+    <button class="player-control" id="playerToggle" type="button" aria-label="Пауза">Ⅱ</button>
+    <button class="player-step" id="playerNext" type="button" aria-label="Вперёд" title="Вперёд">›</button>
+    <button class="player-mode" id="playerRepeat" type="button" aria-label="Повтор" title="Повтор" aria-pressed="false">↻</button>
+  </div>
+  <button class="player-close" id="playerClose" type="button" aria-label="Закрыть проигрыватель">×</button>
+  <audio id="audioElement" preload="metadata"></audio>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/js/auth-state.js?v=20260927-2" defer></script>
 <script src="assets/js/account-avatar.js?v=20260927-3" defer></script>
-<script src="assets/js/music.js" defer></script>
+<script src="assets/js/music.js?v=20260928-2" defer></script>
 </body>
 </html>

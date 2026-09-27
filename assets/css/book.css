@@ -139,3 +139,60 @@ body.background-view-mode .book-header,body.background-view-mode .book-content{o
 body.background-view-mode .book-page::after{opacity:0}
 body.background-view-mode .background-viewer-controls{opacity:1;pointer-events:auto;transform:translateX(-50%)}
 body.background-view-mode .book-page{cursor:default}
+
+/* Более прозрачная стеклянная карточка и мягкое разъезжание интерфейса в режиме просмотра фона. */
+.book-card{
+  background:linear-gradient(145deg,rgba(18,27,37,.32),rgba(18,27,37,.16));
+  border-color:rgba(255,255,255,.18);
+  backdrop-filter:blur(20px) saturate(145%);
+  -webkit-backdrop-filter:blur(20px) saturate(145%);
+  box-shadow:0 28px 90px rgba(0,0,0,.14);
+  transition:transform .72s cubic-bezier(.22,.8,.24,1),background .3s,border-color .3s;
+}
+.download{background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.11);backdrop-filter:blur(9px)}
+.btn.glass{background:rgba(255,255,255,.055);backdrop-filter:blur(14px) saturate(130%)}
+.book-header{transition:transform .68s cubic-bezier(.22,.8,.24,1)}
+.book-cover{transition:transform .76s cubic-bezier(.22,.8,.24,1),opacity .3s}
+
+.background-view-toggle{
+  position:absolute;z-index:8;right:38px;top:90px;width:38px;height:38px;
+  border:1px solid rgba(255,255,255,.17);border-radius:12px;
+  background:rgba(12,20,29,.18);color:rgba(255,255,255,.78);
+  backdrop-filter:blur(15px) saturate(130%);-webkit-backdrop-filter:blur(15px) saturate(130%);
+  box-shadow:0 10px 32px rgba(0,0,0,.10);font-size:17px;line-height:1;
+  opacity:.72;transition:opacity .2s,background .2s,transform .55s cubic-bezier(.22,.8,.24,1);
+}
+.background-view-toggle:hover{opacity:1;background:rgba(12,20,29,.32)}
+body.background-view-mode .background-view-toggle{opacity:.9;transform:rotate(90deg);background:rgba(12,20,29,.28)}
+
+.background-viewer-controls{
+  bottom:24px;gap:8px;transform:translateX(-50%) translateY(24px);
+  transition:opacity .3s .22s,transform .45s .18s cubic-bezier(.22,.8,.24,1)
+}
+.background-viewer-controls button{
+  width:42px!important;height:38px!important;padding:0!important;
+  background:rgba(12,20,29,.24);border-color:rgba(255,255,255,.15);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+}
+body.background-view-mode .book-header{
+  opacity:1!important;transform:translateY(-125px);pointer-events:none
+}
+body.background-view-mode .book-content{
+  opacity:1!important;pointer-events:none
+}
+body.background-view-mode .book-card{transform:translateX(-115vw)}
+body.background-view-mode .book-cover{transform:translateX(115vw) rotate(2deg)}
+body.background-view-mode .book-page::after{opacity:.08}
+body.background-view-mode .background-viewer-controls{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0)}
+@media(max-width:720px){
+  .background-view-toggle{right:14px;top:72px}
+  body.background-view-mode .book-card{transform:translateX(-130vw)}
+}
+
+.book-card{
+  background:linear-gradient(145deg,rgba(12,22,32,.25),rgba(12,22,32,.10));
+  backdrop-filter:blur(30px) saturate(155%);
+  -webkit-backdrop-filter:blur(30px) saturate(155%);
+}
+.download{background:rgba(255,255,255,.035)}
+.background-view-toggle:focus-visible{outline:1px solid rgba(255,255,255,.58);outline-offset:3px}

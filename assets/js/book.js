@@ -243,16 +243,22 @@ function enterBackgroundView() {
   clearInterval(backgroundTimer);
   document.body.classList.add('background-view-mode');
   $('#backgroundViewerControls').setAttribute('aria-hidden', 'false');
+  $('#viewBackgroundsButton').setAttribute('aria-pressed', 'true');
+  $('#viewBackgroundsButton').textContent = '×';
 }
 
 function exitBackgroundView() {
   document.body.classList.remove('background-view-mode');
   $('#backgroundViewerControls').setAttribute('aria-hidden', 'true');
+  $('#viewBackgroundsButton').setAttribute('aria-pressed', 'false');
+  $('#viewBackgroundsButton').textContent = '◫';
   restartBackgroundTimer();
 }
 
-$('#viewBackgroundsButton').addEventListener('click', enterBackgroundView);
-$('#backgroundViewerClose').addEventListener('click', exitBackgroundView);
+$('#viewBackgroundsButton').addEventListener('click', () => {
+  if (document.body.classList.contains('background-view-mode')) exitBackgroundView();
+  else enterBackgroundView();
+});
 $('#backgroundPrev').addEventListener('click', () => activateBackground(currentBackground - 1));
 $('#backgroundNext').addEventListener('click', () => activateBackground(currentBackground + 1));
 document.addEventListener('keydown', (event) => {

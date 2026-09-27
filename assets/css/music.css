@@ -142,3 +142,31 @@ body.is-owner .song-actions .download,body.is-owner .song-actions .edit{display:
   .library{grid-template-columns:1fr}
   .albums-section{max-height:230px}
 }
+
+.player{
+  width:min(930px,calc(100vw - 40px));
+  grid-template-columns:44px minmax(150px,1fr) 170px 84px 216px 26px;
+  background:rgba(255,255,255,.82);
+  backdrop-filter:blur(24px) saturate(135%);
+  -webkit-backdrop-filter:blur(24px) saturate(135%);
+}
+.player-progress{cursor:pointer}
+.player-buttons{display:flex;align-items:center;justify-content:center;gap:5px}
+.player-mode,.player-step{
+  width:32px;height:32px;border:0;border-radius:10px;background:transparent;
+  color:#72808e;font-size:16px;display:grid;place-items:center;transition:.18s
+}
+.player-step{font-size:24px;line-height:1}
+.player-mode:hover,.player-step:hover{background:rgba(81,105,132,.08);color:#33485f}
+.player-mode.active,.player-mode[aria-pressed="true"]{background:#e4ebf2;color:#36516e;box-shadow:inset 0 0 0 1px rgba(73,99,126,.08)}
+.player-control{flex:0 0 auto}
+.player-close{width:26px}
+@media(max-width:760px){
+  .player{height:auto;min-height:78px;padding:8px 10px;grid-template-columns:40px minmax(0,1fr) auto;grid-template-areas:"cover copy close" "progress progress progress" "time controls controls";gap:6px 9px}
+  .player-cover{grid-area:cover;width:40px;height:40px}
+  .player-copy{grid-area:copy;min-width:0}
+  .player-progress{grid-area:progress}
+  .player-time{grid-area:time}
+  .player-buttons{grid-area:controls;justify-content:flex-end}
+  .player-close{grid-area:close}
+}
