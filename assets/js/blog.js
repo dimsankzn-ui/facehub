@@ -282,26 +282,56 @@ async function openViewer(id) {
         section.classList.add('text-block');
         section.textContent = block.value || '';
       } else if (block.type === 'image' || block.type === 'photo') {
-        const image = document.createElement('div');
-        image.className = 'image-block';
-        if (block.value) image.style.backgroundImage = 'url("' + mediaUrl(block.value) + '")';
-        section.appendChild(image);
+        const box = document.createElement('div');
+        box.className = 'image-block';
+
+        if (block.value) {
+          const image = document.createElement('img');
+          image.src = mediaUrl(block.value);
+          image.alt = 'Изображение публикации';
+          image.loading = 'lazy';
+          image.addEventListener('click', () => openMediaLightbox('image', block.value));
+          box.appendChild(image);
+
+          const expand = document.createElement('button');
+          expand.type = 'button';
+          expand.className = 'media-expand';
+          expand.textContent = '⛶';
+          expand.title = 'Открыть на весь экран';
+          expand.setAttribute('aria-label', 'Открыть изображение на весь экран');
+          expand.addEventListener('click', () => openMediaLightbox('image', block.value));
+          box.appendChild(expand);
+        }
+
+        section.appendChild(box);
       } else if (block.type === 'video') {
         const box = document.createElement('div');
         box.className = 'video-block';
+
         if (block.value) {
           const video = document.createElement('video');
           video.src = mediaUrl(block.value);
           video.controls = true;
           video.preload = 'metadata';
           video.playsInline = true;
+          fitVideoToSource(video, box);
           box.appendChild(video);
+
+          const expand = document.createElement('button');
+          expand.type = 'button';
+          expand.className = 'media-expand';
+          expand.textContent = '⛶';
+          expand.title = 'Открыть на весь экран';
+          expand.setAttribute('aria-label', 'Открыть видео на весь экран');
+          expand.addEventListener('click', () => openMediaLightbox('video', block.value));
+          box.appendChild(expand);
         } else {
           const placeholder = document.createElement('div');
           placeholder.className = 'video-placeholder';
           placeholder.textContent = '▶';
           box.appendChild(placeholder);
         }
+
         section.appendChild(box);
       }
 
@@ -314,6 +344,70 @@ async function openViewer(id) {
     toast('Не удалось открыть публикацию');
   }
 }
+
+function fitVideoToSource(video, container = null) {
+  const apply = () => {
+    if (!video.videoWidth || !video.videoHeight) return;
+    const ratio = video.videoWidth + ' / ' + video.videoHeight;
+    video.style.aspectRatio = ratio;
+    if (container) container.style.aspectRatio = ratio;
+  };
+  video.addEventListener('loadedmetadata', apply, { once: true });
+  if (video.readyState >= 1) apply();
+}
+
+function openMediaLightbox(type, path) {
+  if (!path) return;
+
+  const stage = $('#mediaLightboxStage');
+  stage.replaceChildren();
+
+  if (type === 'video') {
+    $('#viewerOverlay').querySelectorAll('video').forEach((video) => video.pause());
+
+    const video = document.createElement('video');
+    video.src = mediaUrl(path);
+    video.controls = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.preload = 'auto';
+    fitVideoToSource(video);
+    stage.appendChild(video);
+    video.play().catch(() => {});
+  } else {
+    const image = document.createElement('img');
+    image.src = mediaUrl(path);
+    image.alt = 'Изображение публикации';
+    stage.appendChild(image);
+  }
+
+  $('#mediaLightbox').classList.add('show');
+  $('#mediaLightbox').setAttribute('aria-hidden', 'false');
+  document.body.classList.add('media-lightbox-open');
+}
+
+function closeMediaLightbox() {
+  const lightbox = $('#mediaLightbox');
+  lightbox.querySelectorAll('video').forEach((video) => video.pause());
+  $('#mediaLightboxStage').replaceChildren();
+  lightbox.classList.remove('show');
+  lightbox.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('media-lightbox-open');
+}
+
+$('#mediaLightboxClose').addEventListener('click', closeMediaLightbox);
+$('#mediaLightbox').addEventListener('click', (event) => {
+  if (event.target === $('#mediaLightbox') || event.target === $('#mediaLightboxStage')) {
+    closeMediaLightbox();
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && $('#mediaLightbox').classList.contains('show')) {
+    event.preventDefault();
+    closeMediaLightbox();
+  }
+});
 
 $('#readFeatured').addEventListener('click', () => {
   const post = visiblePosts()[0];

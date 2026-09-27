@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Блог — Дим Саныч</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/blog.css?v=20260928-1">
+<link rel="stylesheet" href="assets/css/blog.css?v=20260928-4">
 </head>
 <body>
 <div class="blog-app">
@@ -83,6 +83,11 @@
   </section>
 </div>
 
+<div class="media-lightbox" id="mediaLightbox" aria-hidden="true">
+  <button class="media-lightbox-close" id="mediaLightboxClose" type="button" aria-label="Закрыть">×</button>
+  <div class="media-lightbox-stage" id="mediaLightboxStage"></div>
+</div>
+
 <div class="overlay" id="editorOverlay" aria-hidden="true">
   <section class="modal editor-modal">
     <div class="modal-head">
@@ -147,6 +152,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/js/auth-state.js?v=20260927-2" defer></script>
 <script src="assets/js/account-avatar.js?v=20260927-3" defer></script>
-<script src="assets/js/blog.js?v=20260928-2" defer></script>
+<script src="assets/js/blog.js?v=20260928-4" defer></script>
 </body>
 </html>
