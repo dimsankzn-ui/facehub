@@ -4,6 +4,9 @@ let owner = false;
 let books = [];
 let editingBook = null;
 let pendingBackgrounds = [];
+let deletedFiles = new Set();
+let coverDeleted = false;
+let draggedBackgroundId = null;
 
 function mediaUrl(path) {
   if (!path) return '';
@@ -132,8 +135,36 @@ function resetModal() {
   $('#ebookFileName').textContent = 'EPUB, PDF, FB2';
   $('#audiobookFileName').textContent = 'MP3, M4B, AAC, FLAC';
   $('#trailerFileName').textContent = 'MP4, WEBM, MOV';
+  $('#ebookMaterials').replaceChildren();
+  $('#audioMaterials').replaceChildren();
+  $('#trailerMaterials').replaceChildren();
+  $('#removeCoverButton').hidden = true;
+  $('#removeCoverButton').textContent = 'Убрать обложку';
   pendingBackgrounds = [];
+  deletedFiles = new Set();
+  coverDeleted = false;
   editingBook = null;
+}
+
+function openMaterialPreview(url) {
+  $('#materialPreviewImage').src = url;
+  $('#materialPreview').classList.add('show');
+  $('#materialPreview').setAttribute('aria-hidden', 'false');
+}
+
+function closeMaterialPreview() {
+  $('#materialPreview').classList.remove('show');
+  $('#materialPreview').setAttribute('aria-hidden', 'true');
+  $('#materialPreviewImage').removeAttribute('src');
+}
+
+function moveBackground(id, delta) {
+  const index = pendingBackgrounds.findIndex((item) => item.id === id);
+  const target = index + delta;
+  if (index < 0 || target < 0 || target >= pendingBackgrounds.length) return;
+  const [item] = pendingBackgrounds.splice(index, 1);
+  pendingBackgrounds.splice(target, 0, item);
+  renderBackgrounds();
 }
 
 function renderBackgrounds() {
@@ -145,14 +176,69 @@ function renderBackgrounds() {
     return;
   }
 
-  pendingBackgrounds.forEach((bg) => {
+  pendingBackgrounds.forEach((bg, index) => {
     const thumb = document.createElement('div');
     thumb.className = 'background-thumb editable';
     thumb.style.backgroundImage = 'url("' + bg.preview + '")';
+    thumb.draggable = true;
+    thumb.dataset.id = bg.id;
+    thumb.title = 'Нажмите для просмотра · перетащите для изменения порядка';
+
+    thumb.addEventListener('click', (event) => {
+      event.preventDefault();
+      if (!event.target.closest('button')) openMaterialPreview(bg.preview);
+    });
+    thumb.addEventListener('dragstart', (event) => {
+      draggedBackgroundId = bg.id;
+      event.dataTransfer.effectAllowed = 'move';
+      thumb.classList.add('dragging');
+    });
+    thumb.addEventListener('dragend', () => {
+      draggedBackgroundId = null;
+      thumb.classList.remove('dragging');
+    });
+    thumb.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    });
+    thumb.addEventListener('drop', (event) => {
+      event.preventDefault();
+      const from = pendingBackgrounds.findIndex((item) => item.id === draggedBackgroundId);
+      const to = pendingBackgrounds.findIndex((item) => item.id === bg.id);
+      if (from < 0 || to < 0 || from === to) return;
+      const [item] = pendingBackgrounds.splice(from, 1);
+      pendingBackgrounds.splice(to, 0, item);
+      renderBackgrounds();
+    });
+
+    const controls = document.createElement('div');
+    controls.className = 'background-controls';
+
+    const left = document.createElement('button');
+    left.type = 'button';
+    left.textContent = '←';
+    left.title = 'Сдвинуть левее';
+    left.disabled = index === 0;
+    left.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      moveBackground(bg.id, -1);
+    });
+
+    const right = document.createElement('button');
+    right.type = 'button';
+    right.textContent = '→';
+    right.title = 'Сдвинуть правее';
+    right.disabled = index === pendingBackgrounds.length - 1;
+    right.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      moveBackground(bg.id, 1);
+    });
 
     const remove = document.createElement('button');
     remove.type = 'button';
-    remove.className = 'background-remove';
+    remove.className = 'danger';
     remove.textContent = '×';
     remove.title = 'Убрать изображение';
     remove.addEventListener('click', (event) => {
@@ -162,14 +248,111 @@ function renderBackgrounds() {
       renderBackgrounds();
     });
 
-    thumb.appendChild(remove);
+    controls.append(left, right, remove);
+    thumb.appendChild(controls);
     strip.appendChild(thumb);
   });
 }
 
-function currentFileLabel(book, keys, fallback) {
-  const value = keys.map((key) => book?.[key]).find(Boolean);
-  return value ? 'Сейчас: ' + decodeURIComponent(value.split('/').pop()) : fallback;
+const materialDefinitions = [
+  { key: 'file_epub', type: 'epub', label: 'EPUB', group: 'ebook' },
+  { key: 'file_fb2', type: 'fb2', label: 'FB2', group: 'ebook' },
+  { key: 'file_pdf', type: 'pdf', label: 'PDF', group: 'ebook' },
+  { key: 'file_audio', type: 'audio', label: 'Аудио', group: 'audio' },
+  { key: 'file_m4b', type: 'm4b', label: 'M4B', group: 'audio' },
+  { key: 'trailer_file', type: 'trailer', label: 'Трейлер', group: 'trailer' }
+];
+
+function fileName(path) {
+  if (!path) return '';
+  try { return decodeURIComponent(path.split('/').pop()); }
+  catch { return path.split('/').pop(); }
+}
+
+function pendingFilesFor(group) {
+  const input = group === 'ebook' ? $('#ebookFile') : group === 'audio' ? $('#audiobookFile') : $('#trailerFile');
+  return Array.from(input.files || []);
+}
+
+function renderMaterialLists() {
+  const containers = {
+    ebook: $('#ebookMaterials'),
+    audio: $('#audioMaterials'),
+    trailer: $('#trailerMaterials')
+  };
+  Object.values(containers).forEach((container) => container.replaceChildren());
+
+  materialDefinitions.forEach((definition) => {
+    const path = editingBook?.[definition.key];
+    if (!path) return;
+
+    const row = document.createElement('div');
+    row.className = 'material-row' + (deletedFiles.has(definition.type) ? ' pending-delete' : '');
+
+    const copy = document.createElement('div');
+    copy.className = 'material-row-copy';
+    const format = document.createElement('strong');
+    format.textContent = definition.label;
+    const name = document.createElement('span');
+    name.textContent = fileName(path);
+    copy.append(format, name);
+
+    const open = document.createElement('a');
+    open.href = mediaUrl(path);
+    open.target = '_blank';
+    open.rel = 'noopener';
+    open.textContent = 'Открыть';
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.className = 'material-remove';
+    remove.textContent = deletedFiles.has(definition.type) ? 'Отменить' : 'Удалить';
+    remove.addEventListener('click', () => {
+      if (deletedFiles.has(definition.type)) deletedFiles.delete(definition.type);
+      else deletedFiles.add(definition.type);
+      renderMaterialLists();
+    });
+
+    row.append(copy, open, remove);
+    containers[definition.group].appendChild(row);
+  });
+
+  ['ebook', 'audio', 'trailer'].forEach((group) => {
+    pendingFilesFor(group).forEach((file, index) => {
+      const row = document.createElement('div');
+      row.className = 'material-row pending-add';
+      const copy = document.createElement('div');
+      copy.className = 'material-row-copy';
+      const format = document.createElement('strong');
+      format.textContent = file.name.split('.').pop().toUpperCase();
+      const name = document.createElement('span');
+      name.textContent = file.name;
+      copy.append(format, name);
+
+      const status = document.createElement('em');
+      status.textContent = 'Будет добавлен';
+
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'material-remove';
+      remove.textContent = 'Убрать';
+      remove.addEventListener('click', () => {
+        const input = group === 'ebook' ? $('#ebookFile') : group === 'audio' ? $('#audiobookFile') : $('#trailerFile');
+        const transfer = new DataTransfer();
+        Array.from(input.files || []).forEach((item, itemIndex) => {
+          if (itemIndex !== index) transfer.items.add(item);
+        });
+        input.files = transfer.files;
+        const fallback = group === 'ebook' ? 'EPUB, PDF, FB2' : group === 'audio' ? 'MP3, M4B, AAC, FLAC' : 'MP4, WEBM, MOV';
+        const output = group === 'ebook' ? $('#ebookFileName') : group === 'audio' ? $('#audiobookFileName') : $('#trailerFileName');
+        output.textContent = input.files.length ? Array.from(input.files).map((item) => item.name).join(' · ') : fallback;
+        renderMaterialLists();
+      });
+
+      row.append(copy, status, remove);
+      containers[group].appendChild(row);
+    });
+  });
 }
 
 async function openModal(mode = 'add', id = null) {
@@ -197,10 +380,15 @@ async function openModal(mode = 'add', id = null) {
     $('#backgroundInterval').value = data.book.background_interval || 10;
     $('#ebookPrice').value = data.book.price_ebook || 0;
     $('#audiobookPrice').value = data.book.price_audio || 0;
+    $('#litresLink').value = data.book.litres_link || '';
+    $('#bookmateLink').value = data.book.bookmate_link || '';
+    $('#strokiLink').value = data.book.stroki_link || '';
+    $('#trailerLink').value = data.book.trailer_link || '';
 
     if (data.book.cover) {
       $('#coverPreview').style.backgroundImage = 'url("' + mediaUrl(data.book.cover) + '")';
       $('#coverPreview').textContent = '';
+      $('#removeCoverButton').hidden = false;
     }
 
     pendingBackgrounds = (data.backgrounds || []).map((path, index) => ({
@@ -211,9 +399,7 @@ async function openModal(mode = 'add', id = null) {
     }));
     renderBackgrounds();
 
-    $('#ebookFileName').textContent = currentFileLabel(data.book, ['file_epub', 'file_pdf', 'file_fb2'], 'EPUB, PDF, FB2');
-    $('#audiobookFileName').textContent = currentFileLabel(data.book, ['file_audio', 'file_m4b'], 'MP3, M4B, AAC, FLAC');
-    $('#trailerFileName').textContent = currentFileLabel(data.book, ['trailer_file'], 'MP4, WEBM, MOV');
+    renderMaterialLists();
   } catch (error) {
     closeModal();
     toast(error.message || 'Не удалось открыть книгу');
@@ -249,19 +435,19 @@ async function deleteBook(id, title) {
   }
 }
 
-function appendBookFile(formData, input, kind) {
-  const file = input.files?.[0];
-  if (!file) return;
-  const ext = file.name.split('.').pop().toLowerCase();
+function appendBookFiles(formData, input, kind) {
+  Array.from(input.files || []).forEach((file) => {
+    const ext = file.name.split('.').pop().toLowerCase();
 
-  if (kind === 'ebook') {
-    const field = ext === 'pdf' ? 'file_pdf' : ext === 'fb2' ? 'file_fb2' : 'file_epub';
-    formData.append(field, file);
-  } else if (kind === 'audio') {
-    formData.append(ext === 'm4b' ? 'file_m4b' : 'file_audio', file);
-  } else {
-    formData.append('file_trailer', file);
-  }
+    if (kind === 'ebook') {
+      const field = ext === 'pdf' ? 'file_pdf' : ext === 'fb2' ? 'file_fb2' : 'file_epub';
+      formData.set(field, file);
+    } else if (kind === 'audio') {
+      formData.set(ext === 'm4b' ? 'file_m4b' : 'file_audio', file);
+    } else {
+      formData.set('file_trailer', file);
+    }
+  });
 }
 
 $('#bookForm').addEventListener('submit', async (event) => {
@@ -284,17 +470,20 @@ $('#bookForm').addEventListener('submit', async (event) => {
     form.append('price_ebook', String(Number($('#ebookPrice').value || 0)));
     form.append('price_audio', String(Number($('#audiobookPrice').value || 0)));
     form.append('background_interval', String(Math.max(1, Number($('#backgroundInterval').value || 10))));
-    form.append('litres_link', editingBook?.litres_link || '');
-    form.append('bookmate_link', editingBook?.bookmate_link || '');
-    form.append('stroki_link', editingBook?.stroki_link || '');
-    form.append('trailer_link', editingBook?.trailer_link || '');
+    form.append('litres_link', $('#litresLink').value.trim());
+    form.append('bookmate_link', $('#bookmateLink').value.trim());
+    form.append('stroki_link', $('#strokiLink').value.trim());
+    form.append('trailer_link', $('#trailerLink').value.trim());
 
-    ['pdf', 'fb2', 'epub', 'audio', 'm4b', 'trailer'].forEach((ext) => form.append('del_' + ext, '0'));
+    ['pdf', 'fb2', 'epub', 'audio', 'm4b', 'trailer'].forEach((ext) => {
+      form.append('del_' + ext, deletedFiles.has(ext) ? '1' : '0');
+    });
+    form.append('del_cover', coverDeleted ? '1' : '0');
 
     if ($('#bookCover').files?.[0]) form.append('cover', $('#bookCover').files[0]);
-    appendBookFile(form, $('#ebookFile'), 'ebook');
-    appendBookFile(form, $('#audiobookFile'), 'audio');
-    appendBookFile(form, $('#trailerFile'), 'trailer');
+    appendBookFiles(form, $('#ebookFile'), 'ebook');
+    appendBookFiles(form, $('#audiobookFile'), 'audio');
+    appendBookFiles(form, $('#trailerFile'), 'trailer');
 
     let newIndex = 0;
     pendingBackgrounds.forEach((bg) => {
@@ -328,23 +517,51 @@ $('#bookModal').addEventListener('click', (event) => {
   if (event.target.id === 'bookModal') closeModal();
 });
 
-function bindFileName(inputId, outputId, fallback) {
+function bindFiles(inputId, outputId, fallback) {
   const input = $('#' + inputId);
   input.addEventListener('change', () => {
-    const file = input.files?.[0];
-    $('#' + outputId).textContent = file ? file.name : fallback;
+    const files = Array.from(input.files || []);
+    $('#' + outputId).textContent = files.length ? files.map((file) => file.name).join(' · ') : fallback;
+    renderMaterialLists();
   });
 }
 
-bindFileName('ebookFile', 'ebookFileName', 'EPUB, PDF, FB2');
-bindFileName('audiobookFile', 'audiobookFileName', 'MP3, M4B, AAC, FLAC');
-bindFileName('trailerFile', 'trailerFileName', 'MP4, WEBM, MOV');
+bindFiles('ebookFile', 'ebookFileName', 'EPUB, PDF, FB2');
+bindFiles('audiobookFile', 'audiobookFileName', 'MP3, M4B, AAC, FLAC');
+bindFiles('trailerFile', 'trailerFileName', 'MP4, WEBM, MOV');
 
 $('#bookCover').addEventListener('change', () => {
   const file = $('#bookCover').files?.[0];
   if (!file) return;
+  coverDeleted = false;
+  $('#removeCoverButton').hidden = false;
+  $('#removeCoverButton').textContent = 'Убрать обложку';
   $('#coverPreview').style.backgroundImage = 'url("' + URL.createObjectURL(file) + '")';
   $('#coverPreview').textContent = '';
+});
+
+$('#removeCoverButton').addEventListener('click', () => {
+  if (!editingBook?.cover && !$('#bookCover').files?.[0]) return;
+  if (coverDeleted) {
+    coverDeleted = false;
+    $('#removeCoverButton').textContent = 'Убрать обложку';
+    if (editingBook?.cover) {
+      $('#coverPreview').style.backgroundImage = 'url("' + mediaUrl(editingBook.cover) + '")';
+      $('#coverPreview').textContent = '';
+    }
+    return;
+  }
+
+  coverDeleted = true;
+  $('#bookCover').value = '';
+  $('#coverPreview').style.backgroundImage = '';
+  $('#coverPreview').textContent = '×';
+  $('#removeCoverButton').textContent = 'Вернуть обложку';
+});
+
+$('#materialPreviewClose').addEventListener('click', closeMaterialPreview);
+$('#materialPreview').addEventListener('click', (event) => {
+  if (event.target.id === 'materialPreview') closeMaterialPreview();
 });
 
 $('#bookBackgrounds').addEventListener('change', () => {

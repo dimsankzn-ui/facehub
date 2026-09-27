@@ -7,6 +7,9 @@ let book = null;
 let backgrounds = [];
 let hasAccess = false;
 let backgroundTimer = null;
+let backgroundLayers = [];
+let backgroundDots = [];
+let currentBackground = 0;
 let nativeAudio = null;
 
 function mediaUrl(path) {
@@ -41,6 +44,28 @@ function extension(path) {
   return ext ? ext.toUpperCase() : '';
 }
 
+function activateBackground(index) {
+  if (!backgroundLayers.length) return;
+  currentBackground = (index + backgroundLayers.length) % backgroundLayers.length;
+
+  backgroundLayers.forEach((layer, i) => layer.classList.toggle('active', i === currentBackground));
+  backgroundDots.forEach((dot, i) => {
+    dot.classList.remove('active');
+    if (i === currentBackground) {
+      void dot.offsetWidth;
+      dot.classList.add('active');
+    }
+  });
+}
+
+function restartBackgroundTimer() {
+  clearInterval(backgroundTimer);
+  const seconds = Math.max(1, Number(book.background_interval || 10));
+  document.documentElement.style.setProperty('--background-interval', seconds + 's');
+  if (backgroundLayers.length <= 1) return;
+  backgroundTimer = setInterval(() => activateBackground(currentBackground + 1), seconds * 1000);
+}
+
 function configureBackgrounds() {
   const container = $('#bookBackgroundsView');
   const progress = $('#backgroundProgress');
@@ -48,9 +73,10 @@ function configureBackgrounds() {
   progress.replaceChildren();
 
   const images = backgrounds.length ? backgrounds : [book.cover].filter(Boolean);
+  $('#viewBackgroundsButton').style.display = images.length ? 'inline-flex' : 'none';
   if (!images.length) return;
 
-  const layers = images.map((path, index) => {
+  backgroundLayers = images.map((path, index) => {
     const layer = document.createElement('div');
     layer.className = 'bg-layer' + (index === 0 ? ' active' : '');
     layer.style.backgroundImage = 'url("' + mediaUrl(path) + '")';
@@ -62,26 +88,11 @@ function configureBackgrounds() {
     return layer;
   });
 
-  const dots = [...progress.querySelectorAll('i')];
-  let current = 0;
-  const activate = (index) => {
-    layers.forEach((layer, i) => layer.classList.toggle('active', i === index));
-    dots.forEach((dot, i) => {
-      dot.classList.remove('active');
-      if (i === index) {
-        void dot.offsetWidth;
-        dot.classList.add('active');
-      }
-    });
-  };
-
-  if (layers.length > 1) {
-    const seconds = Math.max(1, Number(book.background_interval || 10));
-    backgroundTimer = setInterval(() => {
-      current = (current + 1) % layers.length;
-      activate(current);
-    }, seconds * 1000);
-  }
+  backgroundDots = [...progress.querySelectorAll('i')];
+  currentBackground = 0;
+  $('#backgroundPrev').disabled = backgroundLayers.length <= 1;
+  $('#backgroundNext').disabled = backgroundLayers.length <= 1;
+  restartBackgroundTimer();
 }
 
 function createDownloadRow(label, files, access, type) {
@@ -157,10 +168,44 @@ function configureMaterials() {
   if (ebooks.length) downloads.appendChild(createDownloadRow('Электронная книга', ebooks, ebookAccess, 'ebook'));
   if (audio.length) downloads.appendChild(createDownloadRow('Аудиокнига', audio, audioAccess, 'audio'));
 
-  if (!ebooks.length && !audio.length) {
+  const external = [
+    { label: 'ЛитРес', url: book.litres_link },
+    { label: 'Букмейт', url: book.bookmate_link },
+    { label: 'Строки', url: book.stroki_link }
+  ].filter((item) => item.url);
+
+  if (external.length) {
+    const row = document.createElement('div');
+    row.className = 'download';
+    const icon = document.createElement('div');
+    icon.className = 'download-icon';
+    icon.textContent = '↗';
+    const copy = document.createElement('div');
+    copy.className = 'download-copy';
+    const strong = document.createElement('strong');
+    strong.textContent = 'Читать на площадке';
+    const caption = document.createElement('span');
+    caption.textContent = external.map((item) => item.label).join(' · ');
+    copy.append(strong, caption);
+    const actions = document.createElement('div');
+    actions.className = 'download-actions';
+    external.forEach((item) => {
+      const link = document.createElement('a');
+      link.className = 'mini';
+      link.href = item.url;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = item.label;
+      actions.appendChild(link);
+    });
+    row.append(icon, copy, actions);
+    downloads.appendChild(row);
+  }
+
+  if (!ebooks.length && !audio.length && !external.length) {
     const message = document.createElement('p');
     message.className = 'description';
-    message.textContent = 'Для этой книги пока не загружены файлы.';
+    message.textContent = 'Для этой книги пока не загружены материалы.';
     downloads.appendChild(message);
   }
 
@@ -192,6 +237,30 @@ function configureTrailer() {
 
   button.style.display = 'none';
 }
+
+function enterBackgroundView() {
+  if (!backgroundLayers.length) return;
+  clearInterval(backgroundTimer);
+  document.body.classList.add('background-view-mode');
+  $('#backgroundViewerControls').setAttribute('aria-hidden', 'false');
+}
+
+function exitBackgroundView() {
+  document.body.classList.remove('background-view-mode');
+  $('#backgroundViewerControls').setAttribute('aria-hidden', 'true');
+  restartBackgroundTimer();
+}
+
+$('#viewBackgroundsButton').addEventListener('click', enterBackgroundView);
+$('#backgroundViewerClose').addEventListener('click', exitBackgroundView);
+$('#backgroundPrev').addEventListener('click', () => activateBackground(currentBackground - 1));
+$('#backgroundNext').addEventListener('click', () => activateBackground(currentBackground + 1));
+document.addEventListener('keydown', (event) => {
+  if (!document.body.classList.contains('background-view-mode')) return;
+  if (event.key === 'Escape') exitBackgroundView();
+  if (event.key === 'ArrowLeft') activateBackground(currentBackground - 1);
+  if (event.key === 'ArrowRight') activateBackground(currentBackground + 1);
+});
 
 function configureAdmin() {
   const isAdmin = auth.logged_in && auth.role === 'admin';

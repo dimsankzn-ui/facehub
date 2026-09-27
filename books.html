@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Книги — Дим Саныч</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/books.css?v=20260927-4">
+<link rel="stylesheet" href="assets/css/books.css?v=20260927-7">
 </head>
 <body>
 <div class="books-app">
@@ -86,6 +86,7 @@
             <strong>Загрузить обложку</strong>
             <span>Вертикальный формат · JPG, PNG, WEBP</span>
           </label>
+          <button class="material-remove cover-remove" id="removeCoverButton" type="button" hidden>Убрать обложку</button>
         </section>
 
         <section class="book-fields">
@@ -122,23 +123,44 @@
             <textarea id="bookDescription" placeholder="Описание книги"></textarea>
           </label>
 
+          <div class="external-links-grid">
+            <label class="field">
+              <span>ЛитРес</span>
+              <input id="litresLink" type="url" placeholder="https://...">
+            </label>
+            <label class="field">
+              <span>Букмейт</span>
+              <input id="bookmateLink" type="url" placeholder="https://...">
+            </label>
+            <label class="field">
+              <span>Строки</span>
+              <input id="strokiLink" type="url" placeholder="https://...">
+            </label>
+            <label class="field">
+              <span>Внешняя ссылка на трейлер</span>
+              <input id="trailerLink" type="url" placeholder="https://...">
+            </label>
+          </div>
+
           <div class="upload-grid">
             <div>
               <span class="section-label">Электронная книга</span>
               <label class="file-upload-zone" for="ebookFile">
-                <input id="ebookFile" type="file" accept=".epub,.pdf,.fb2" hidden>
+                <input id="ebookFile" type="file" accept=".epub,.pdf,.fb2" multiple hidden>
                 <span class="upload-icon">⇧</span>
-                <span class="upload-copy"><strong>Загрузить файл</strong><small id="ebookFileName">EPUB, PDF, FB2</small></span>
+                <span class="upload-copy"><strong>Добавить файлы</strong><small id="ebookFileName">EPUB, PDF, FB2</small></span>
               </label>
+              <div class="material-list" id="ebookMaterials"></div>
             </div>
 
             <div>
               <span class="section-label">Аудиокнига</span>
               <label class="file-upload-zone" for="audiobookFile">
-                <input id="audiobookFile" type="file" accept=".mp3,.m4b,.aac,.flac,audio/*" hidden>
+                <input id="audiobookFile" type="file" accept=".mp3,.m4b,.aac,.flac,audio/*" multiple hidden>
                 <span class="upload-icon">♪</span>
-                <span class="upload-copy"><strong>Загрузить аудио</strong><small id="audiobookFileName">MP3, M4B, AAC, FLAC</small></span>
+                <span class="upload-copy"><strong>Добавить аудио</strong><small id="audiobookFileName">MP3, M4B, AAC, FLAC</small></span>
               </label>
+              <div class="material-list" id="audioMaterials"></div>
             </div>
 
             <div>
@@ -146,8 +168,9 @@
               <label class="file-upload-zone" for="trailerFile">
                 <input id="trailerFile" type="file" accept=".mp4,.webm,.mov,video/*" hidden>
                 <span class="upload-icon">▶</span>
-                <span class="upload-copy"><strong>Загрузить видео</strong><small id="trailerFileName">MP4, WEBM, MOV</small></span>
+                <span class="upload-copy"><strong>Добавить видео</strong><small id="trailerFileName">MP4, WEBM, MOV</small></span>
               </label>
+              <div class="material-list" id="trailerMaterials"></div>
             </div>
 
             <div>
@@ -175,9 +198,14 @@
   </div>
 </div>
 
+<div class="material-preview" id="materialPreview" aria-hidden="true">
+  <button class="material-preview-close" id="materialPreviewClose" type="button" aria-label="Закрыть">×</button>
+  <img id="materialPreviewImage" alt="Просмотр фонового изображения">
+</div>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/js/auth-state.js?v=20260927-2" defer></script>
 <script src="assets/js/account-avatar.js?v=20260927-3" defer></script>
-<script src="assets/js/books.js?v=20260927-4" defer></script>
+<script src="assets/js/books.js?v=20260927-7" defer></script>
 </body>
 </html>

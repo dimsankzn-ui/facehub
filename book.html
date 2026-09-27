@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Книга — Дим Саныч</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/book.css?v=20260927-4">
+<link rel="stylesheet" href="assets/css/book.css?v=20260927-7">
 </head>
 <body>
 <div class="book-page">
@@ -31,6 +31,7 @@
 
       <div class="actions">
         <button class="btn primary" id="trailerButton" type="button">▶ Смотреть трейлер</button>
+        <button class="btn glass" id="viewBackgroundsButton" type="button">Просмотреть фоны</button>
         <button class="btn glass admin-book-action" id="editBookButton" type="button" hidden>Редактировать</button>
         <button class="btn danger admin-book-action" id="deleteBookButton" type="button" hidden>Удалить</button>
       </div>
@@ -45,8 +46,14 @@
       </div>
     </section>
 
-    <div class="book-cover" id="bookCoverView"><small>Дим Саныч</small></div>
+    <div class="book-cover" id="bookCoverView" aria-label="Обложка книги"></div>
   </main>
+
+  <div class="background-viewer-controls" id="backgroundViewerControls" aria-hidden="true">
+    <button type="button" id="backgroundPrev" aria-label="Предыдущее фоновое изображение">←</button>
+    <button type="button" id="backgroundViewerClose">Вернуться к книге</button>
+    <button type="button" id="backgroundNext" aria-label="Следующее фоновое изображение">→</button>
+  </div>
 </div>
 
 <div class="overlay" id="readerOverlay" aria-hidden="true">
@@ -149,6 +156,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/js/auth-state.js?v=20260927-2" defer></script>
 <script src="assets/js/account-avatar.js?v=20260927-3" defer></script>
-<script src="assets/js/book.js?v=20260927-4" defer></script>
+<script src="assets/js/book.js?v=20260927-7" defer></script>
 </body>
 </html>
