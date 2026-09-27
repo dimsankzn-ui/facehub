@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Книга — Дим Саныч</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/book.css">
+<link rel="stylesheet" href="assets/css/book.css?v=20260927-4">
 </head>
 <body>
 <div class="book-page">
@@ -31,6 +31,8 @@
 
       <div class="actions">
         <button class="btn primary" id="trailerButton" type="button">▶ Смотреть трейлер</button>
+        <button class="btn glass admin-book-action" id="editBookButton" type="button" hidden>Редактировать</button>
+        <button class="btn danger admin-book-action" id="deleteBookButton" type="button" hidden>Удалить</button>
       </div>
 
       <div class="access" id="accessBlock">
@@ -133,11 +135,12 @@
     <div class="overlay-spacer"></div>
   </div>
   <div class="trailer-shell">
-    <div class="trailer-frame">
-      <div class="trailer-placeholder">
+    <div class="trailer-frame" id="trailerFrame">
+      <video id="trailerVideo" controls playsinline preload="metadata"></video>
+      <div class="trailer-placeholder" id="trailerPlaceholder">
         <span>▶</span>
         <strong id="trailerTitle">Трейлер книги</strong>
-        <small>Видео будет воспроизводиться здесь после подключения файлового хранилища.</small>
+        <small>Для этой книги трейлер пока не загружен.</small>
       </div>
     </div>
   </div>
@@ -146,6 +149,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/js/auth-state.js?v=20260927-2" defer></script>
 <script src="assets/js/account-avatar.js?v=20260927-3" defer></script>
-<script src="assets/js/book.js" defer></script>
+<script src="assets/js/book.js?v=20260927-4" defer></script>
 </body>
 </html>

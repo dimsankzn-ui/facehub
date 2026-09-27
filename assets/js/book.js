@@ -1,107 +1,28 @@
 const $ = (selector) => document.querySelector(selector);
-const BOOKS_KEY = 'facehubDemoBooks';
-
 const params = new URLSearchParams(location.search);
 const requestedId = params.get('id');
 
-function getBooks() {
-  try { return JSON.parse(localStorage.getItem(BOOKS_KEY) || '[]'); }
-  catch { return []; }
+let auth = { logged_in: false, role: 'guest' };
+let book = null;
+let backgrounds = [];
+let hasAccess = false;
+let backgroundTimer = null;
+let nativeAudio = null;
+
+function mediaUrl(path) {
+  if (!path) return '';
+  return new URL(path.replace(/^\//, ''), location.origin + '/').href;
 }
 
-const demoBook = {
-  id: 'demo',
-  title: 'Тихая линия',
-  description: 'История о памяти, дороге и тех разговорах, которые случаются слишком поздно. Неспешный текст о выборе, возвращении и попытке сохранить то, что обычно исчезает первым.',
-  backgroundInterval: 10,
-  ebookFileName: 'tihaya-liniya.epub',
-  audiobookFileName: 'tihaya-liniya.m4b',
-  trailerFileName: 'trailer.mp4',
-  ebookPrice: 390,
-  audiobookPrice: 690
-};
-
-const storedBooks = getBooks();
-const book = storedBooks.find(item => item.id === requestedId) || demoBook;
-
-const isOwner = sessionStorage.getItem('facehubDemoRole') === 'owner';
-let purchasedIds = [];
-try { purchasedIds = JSON.parse(localStorage.getItem('facehubDemoPurchasedBooks') || '[]'); } catch {}
-const purchased = isOwner || book.id === 'demo' || purchasedIds.includes(book.id) || params.get('purchased') === '1';
-
-function fileExt(name, fallback) {
-  if (!name) return fallback;
-  const ext = name.split('.').pop();
-  return ext ? ext.toUpperCase() : fallback;
-}
-
-function populateBook() {
-  document.title = book.title + ' — Дим Саныч';
-  $('#bookTitleView').textContent = book.title;
-  $('#bookDescriptionView').textContent = book.description || 'Описание книги появится здесь.';
-  $('#readerBookTitle').textContent = book.title;
-  $('#readerHeading').textContent = book.title;
-  $('#audioBookTitle').textContent = book.title;
-  $('#audioHeading').textContent = book.title;
-  $('#trailerTitle').textContent = book.title;
-  $('#bookCoverView').dataset.title = book.title;
-  $('#audioCover').dataset.title = book.title;
-
-  const interval = Math.max(1, Number(book.backgroundInterval || 10));
-  document.documentElement.style.setProperty('--background-interval', interval + 's');
-
-  const hasTrailer = Boolean(book.trailerFileName) || book.id === 'demo';
-  $('#trailerButton').style.display = hasTrailer ? 'inline-flex' : 'none';
-
-  if (!purchased) {
-    $('#bookKicker').textContent = 'Книга';
-    $('#accessBlock').innerHTML = '<div class="access-head"><span class="access-title">Материалы</span></div><p class="description" style="margin:0">После покупки здесь появятся доступные форматы электронной книги и аудиокниги.</p>';
-    return;
-  }
-
-  $('#bookKicker').textContent = 'Книга · куплено';
-
-  const items = [];
-  if (book.ebookFileName || book.id === 'demo') {
-    const ext = fileExt(book.ebookFileName, 'EPUB');
-    items.push(`
-      <div class="download">
-        <div class="download-icon">⇩</div>
-        <div class="download-copy"><strong>Электронная книга</strong><span>${ext}</span></div>
-        <div class="download-actions">
-          <button class="mini main" type="button" data-action="reader">Читать онлайн</button>
-          <button class="mini" type="button" data-action="download-ebook">Скачать</button>
-        </div>
-      </div>
-    `);
-    $('#readerFormat').textContent = ext;
-  }
-
-  if (book.audiobookFileName || book.id === 'demo') {
-    const ext = fileExt(book.audiobookFileName, 'M4B');
-    items.push(`
-      <div class="download">
-        <div class="download-icon">♪</div>
-        <div class="download-copy"><strong>Аудиокнига</strong><span>${ext}</span></div>
-        <div class="download-actions">
-          <button class="mini main" type="button" data-action="audio">Слушать онлайн</button>
-          <button class="mini" type="button" data-action="download-audio">Скачать</button>
-        </div>
-      </div>
-    `);
-  }
-
-  $('#downloads').innerHTML = items.join('') || '<p class="description">Для этой книги пока не загружены файлы.</p>';
-}
-
-function openOverlay(id) {
-  $('#' + id).classList.add('show');
-  $('#' + id).setAttribute('aria-hidden', 'false');
-}
-
-function closeOverlay(id) {
-  $('#' + id).classList.remove('show');
-  $('#' + id).setAttribute('aria-hidden', 'true');
+async function api(action, data = {}) {
+  const response = await fetch('api.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    credentials: 'same-origin',
+    body: new URLSearchParams({ action, ...data }).toString()
+  });
+  if (!response.ok) throw new Error('Ошибка сервера');
+  return response.json();
 }
 
 function toast(message) {
@@ -110,83 +31,294 @@ function toast(message) {
   node.textContent = message;
   node.classList.add('show');
   clearTimeout(window.__bookPageToast);
-  window.__bookPageToast = setTimeout(() => node.classList.remove('show'), 2000);
+  window.__bookPageToast = setTimeout(() => node.classList.remove('show'), 2200);
 }
 
-document.addEventListener('click', (event) => {
-  const action = event.target.closest('[data-action]')?.dataset.action;
-  if (action === 'reader') openOverlay('readerOverlay');
-  if (action === 'audio') openOverlay('audioOverlay');
-  if (action === 'download-ebook') toast('Скачивание электронной книги будет доступно после подключения файлового хранилища.');
-  if (action === 'download-audio') toast('Скачивание аудиокниги будет доступно после подключения файлового хранилища.');
-});
+function extension(path) {
+  if (!path) return '';
+  const clean = path.split('?')[0];
+  const ext = clean.split('.').pop();
+  return ext ? ext.toUpperCase() : '';
+}
+
+function configureBackgrounds() {
+  const container = $('#bookBackgroundsView');
+  const progress = $('#backgroundProgress');
+  container.replaceChildren();
+  progress.replaceChildren();
+
+  const images = backgrounds.length ? backgrounds : [book.cover].filter(Boolean);
+  if (!images.length) return;
+
+  const layers = images.map((path, index) => {
+    const layer = document.createElement('div');
+    layer.className = 'bg-layer' + (index === 0 ? ' active' : '');
+    layer.style.backgroundImage = 'url("' + mediaUrl(path) + '")';
+    container.appendChild(layer);
+
+    const dot = document.createElement('i');
+    if (index === 0) dot.classList.add('active');
+    progress.appendChild(dot);
+    return layer;
+  });
+
+  const dots = [...progress.querySelectorAll('i')];
+  let current = 0;
+  const activate = (index) => {
+    layers.forEach((layer, i) => layer.classList.toggle('active', i === index));
+    dots.forEach((dot, i) => {
+      dot.classList.remove('active');
+      if (i === index) {
+        void dot.offsetWidth;
+        dot.classList.add('active');
+      }
+    });
+  };
+
+  if (layers.length > 1) {
+    const seconds = Math.max(1, Number(book.background_interval || 10));
+    backgroundTimer = setInterval(() => {
+      current = (current + 1) % layers.length;
+      activate(current);
+    }, seconds * 1000);
+  }
+}
+
+function createDownloadRow(label, files, access, type) {
+  const row = document.createElement('div');
+  row.className = 'download';
+
+  const icon = document.createElement('div');
+  icon.className = 'download-icon';
+  icon.textContent = type === 'audio' ? '♪' : '⇩';
+
+  const copy = document.createElement('div');
+  copy.className = 'download-copy';
+  const strong = document.createElement('strong');
+  strong.textContent = label;
+  const formats = document.createElement('span');
+  formats.textContent = files.map((item) => extension(item.path)).join(' · ');
+  copy.append(strong, formats);
+
+  const actions = document.createElement('div');
+  actions.className = 'download-actions';
+
+  if (access) {
+    const open = document.createElement('button');
+    open.className = 'mini main';
+    open.type = 'button';
+    open.textContent = type === 'audio' ? 'Слушать' : 'Открыть';
+    open.addEventListener('click', () => {
+      if (type === 'audio') openAudio(files[0].path);
+      else window.open(mediaUrl(files[0].path), '_blank', 'noopener');
+    });
+    actions.appendChild(open);
+
+    files.forEach((item) => {
+      const link = document.createElement('a');
+      link.className = 'mini';
+      link.href = mediaUrl(item.path);
+      link.download = '';
+      link.textContent = extension(item.path) || 'Скачать';
+      actions.appendChild(link);
+    });
+  } else {
+    const locked = document.createElement('button');
+    locked.className = 'mini';
+    locked.type = 'button';
+    locked.textContent = 'Требуется доступ';
+    locked.addEventListener('click', () => toast(auth.logged_in ? 'Для этого материала требуется доступ.' : 'Сначала войдите в аккаунт.'));
+    actions.appendChild(locked);
+  }
+
+  row.append(icon, copy, actions);
+  return row;
+}
+
+function configureMaterials() {
+  const downloads = $('#downloads');
+  downloads.replaceChildren();
+
+  const ebooks = [
+    { path: book.file_epub },
+    { path: book.file_pdf },
+    { path: book.file_fb2 }
+  ].filter((item) => item.path);
+
+  const audio = [
+    { path: book.file_audio },
+    { path: book.file_m4b }
+  ].filter((item) => item.path);
+
+  const isAdmin = auth.logged_in && auth.role === 'admin';
+  const ebookAccess = isAdmin || (auth.logged_in && (Number(book.price_ebook || 0) === 0 || hasAccess));
+  const audioAccess = isAdmin || (auth.logged_in && (Number(book.price_audio || 0) === 0 || hasAccess));
+
+  if (ebooks.length) downloads.appendChild(createDownloadRow('Электронная книга', ebooks, ebookAccess, 'ebook'));
+  if (audio.length) downloads.appendChild(createDownloadRow('Аудиокнига', audio, audioAccess, 'audio'));
+
+  if (!ebooks.length && !audio.length) {
+    const message = document.createElement('p');
+    message.className = 'description';
+    message.textContent = 'Для этой книги пока не загружены файлы.';
+    downloads.appendChild(message);
+  }
+
+  $('#bookKicker').textContent = isAdmin ? 'Книга · владелец' : 'Книга';
+}
+
+function configureTrailer() {
+  const button = $('#trailerButton');
+  const video = $('#trailerVideo');
+  const placeholder = $('#trailerPlaceholder');
+
+  if (book.trailer_file) {
+    button.style.display = 'inline-flex';
+    video.src = mediaUrl(book.trailer_file);
+    video.poster = book.cover ? mediaUrl(book.cover) : '';
+    video.classList.add('show');
+    placeholder.style.display = 'none';
+    button.onclick = () => openOverlay('trailerOverlay');
+    return;
+  }
+
+  if (book.trailer_link) {
+    button.style.display = 'inline-flex';
+    video.classList.remove('show');
+    placeholder.style.display = '';
+    button.onclick = () => window.open(book.trailer_link, '_blank', 'noopener');
+    return;
+  }
+
+  button.style.display = 'none';
+}
+
+function configureAdmin() {
+  const isAdmin = auth.logged_in && auth.role === 'admin';
+  $('#editBookButton').hidden = !isAdmin;
+  $('#deleteBookButton').hidden = !isAdmin;
+  if (!isAdmin) return;
+
+  $('#editBookButton').addEventListener('click', () => {
+    location.href = 'books.html?edit=' + encodeURIComponent(book.id);
+  });
+
+  let deleteArmed = false;
+  let deleteTimer = null;
+  $('#deleteBookButton').addEventListener('click', async () => {
+    if (!deleteArmed) {
+      deleteArmed = true;
+      $('#deleteBookButton').textContent = 'Подтвердить удаление';
+      toast('Нажмите кнопку ещё раз, чтобы удалить книгу полностью');
+      clearTimeout(deleteTimer);
+      deleteTimer = setTimeout(() => {
+        deleteArmed = false;
+        $('#deleteBookButton').textContent = 'Удалить';
+      }, 3500);
+      return;
+    }
+
+    clearTimeout(deleteTimer);
+    try {
+      const result = await api('delete_book', { book_id: book.id });
+      if (!result.success) throw new Error('Удаление не выполнено');
+      location.href = 'books.html';
+    } catch {
+      toast('Не удалось удалить книгу');
+    }
+  });
+}
+
+function populateBook() {
+  document.title = book.title + ' — Дим Саныч';
+  $('#bookTitleView').textContent = book.title;
+  $('#bookDescriptionView').textContent = book.annotation || 'Описание книги появится здесь.';
+  $('#readerBookTitle').textContent = book.title;
+  $('#readerHeading').textContent = book.title;
+  $('#audioBookTitle').textContent = book.title;
+  $('#audioHeading').textContent = book.title;
+  $('#trailerTitle').textContent = book.title;
+  $('#bookCoverView').dataset.title = book.title;
+  $('#audioCover').dataset.title = book.title;
+
+  if (book.cover) {
+    const cover = mediaUrl(book.cover);
+    $('#bookCoverView').style.backgroundImage = 'url("' + cover + '")';
+    $('#audioCover').style.backgroundImage = 'url("' + cover + '")';
+  }
+
+  configureBackgrounds();
+  configureMaterials();
+  configureTrailer();
+  configureAdmin();
+}
+
+function openOverlay(id) {
+  $('#' + id).classList.add('show');
+  $('#' + id).setAttribute('aria-hidden', 'false');
+  if (id === 'trailerOverlay' && book.trailer_file) $('#trailerVideo').play().catch(() => {});
+}
+
+function closeOverlay(id) {
+  $('#' + id).classList.remove('show');
+  $('#' + id).setAttribute('aria-hidden', 'true');
+  if (id === 'trailerOverlay') $('#trailerVideo').pause();
+  if (id === 'audioOverlay' && nativeAudio) nativeAudio.pause();
+}
+
+function openAudio(path) {
+  if (!nativeAudio) {
+    nativeAudio = document.createElement('audio');
+    nativeAudio.controls = true;
+    nativeAudio.style.width = '100%';
+    nativeAudio.style.marginTop = '16px';
+    $('.audio-main').appendChild(nativeAudio);
+  }
+  nativeAudio.src = mediaUrl(path);
+  openOverlay('audioOverlay');
+  nativeAudio.play().catch(() => {});
+}
 
 document.querySelectorAll('[data-close]').forEach((button) => {
   button.addEventListener('click', () => closeOverlay(button.dataset.close));
 });
 
-$('#trailerButton').addEventListener('click', () => openOverlay('trailerOverlay'));
-
-const layers = [...document.querySelectorAll('.bg-layer')];
-const dots = [...document.querySelectorAll('.background-progress i')];
-let currentBackground = 0;
-const intervalMs = Math.max(1, Number(book.backgroundInterval || 10)) * 1000;
-
-function activateBackground(index) {
-  layers.forEach((layer, i) => layer.classList.toggle('active', i === index));
-  dots.forEach((dot, i) => {
-    dot.classList.remove('active');
-    if (i === index) {
-      void dot.offsetWidth;
-      dot.classList.add('active');
-    }
-  });
-}
-
-setInterval(() => {
-  currentBackground = (currentBackground + 1) % layers.length;
-  activateBackground(currentBackground);
-}, intervalMs);
-
 let readerFont = 17;
 $('#fontPlus').addEventListener('click', () => {
   readerFont = Math.min(24, readerFont + 1);
-  document.querySelectorAll('.reader-page p').forEach(p => p.style.fontSize = readerFont + 'px');
+  document.querySelectorAll('.reader-page p').forEach((p) => p.style.fontSize = readerFont + 'px');
 });
 $('#fontMinus').addEventListener('click', () => {
   readerFont = Math.max(13, readerFont - 1);
-  document.querySelectorAll('.reader-page p').forEach(p => p.style.fontSize = readerFont + 'px');
+  document.querySelectorAll('.reader-page p').forEach((p) => p.style.fontSize = readerFont + 'px');
 });
-
 $('#readerTheme').addEventListener('click', () => {
   $('#readerPage').classList.toggle('dark');
   $('#readerTheme').textContent = $('#readerPage').classList.contains('dark') ? 'Тёмная тема' : 'Светлая тема';
 });
 
-let pageNumber = 42;
-function updatePage() { $('#readerPageNumber').textContent = pageNumber + ' / 318'; }
-$('#readerPrev').addEventListener('click', () => { pageNumber = Math.max(1, pageNumber - 1); updatePage(); });
-$('#readerNext').addEventListener('click', () => { pageNumber = Math.min(318, pageNumber + 1); updatePage(); });
+async function init() {
+  if (!requestedId) {
+    location.replace('books.html');
+    return;
+  }
 
-let playing = true;
-$('#playButton').addEventListener('click', () => {
-  playing = !playing;
-  $('#playButton').textContent = playing ? 'Ⅱ' : '▶';
-});
+  try {
+    const [authData, details] = await Promise.all([
+      api('check_auth').catch(() => ({ logged_in: false, role: 'guest' })),
+      api('get_book_details', { book_id: requestedId })
+    ]);
 
-const speeds = [1, 1.25, 1.5, 1.75, 2];
-let speedIndex = 0;
-$('#speedButton').addEventListener('click', () => {
-  speedIndex = (speedIndex + 1) % speeds.length;
-  $('#speedButton').textContent = speeds[speedIndex] + '× скорость';
-});
+    auth = authData;
+    if (!details.success || !details.book) throw new Error('Книга не найдена');
+    book = details.book;
+    backgrounds = Array.isArray(details.backgrounds) ? details.backgrounds : [];
+    hasAccess = Boolean(details.has_access);
+    populateBook();
+  } catch (error) {
+    toast(error.message || 'Не удалось загрузить книгу');
+    setTimeout(() => location.replace('books.html'), 1200);
+  }
+}
 
-document.querySelectorAll('.chapter').forEach((button) => {
-  button.addEventListener('click', () => {
-    document.querySelectorAll('.chapter').forEach(item => item.classList.remove('active'));
-    button.classList.add('active');
-    $('.audio-kicker').textContent = 'Сейчас играет · ' + button.textContent;
-  });
-});
-
-populateBook();
+init();

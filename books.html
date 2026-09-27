@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Книги — Дим Саныч</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/books.css">
+<link rel="stylesheet" href="assets/css/books.css?v=20260927-4">
 </head>
 <body>
 <div class="books-app">
@@ -126,18 +126,18 @@
             <div>
               <span class="section-label">Электронная книга</span>
               <label class="file-upload-zone" for="ebookFile">
-                <input id="ebookFile" type="file" accept=".epub,.pdf,.fb2,.mobi,.azw3,.docx" hidden>
+                <input id="ebookFile" type="file" accept=".epub,.pdf,.fb2" hidden>
                 <span class="upload-icon">⇧</span>
-                <span class="upload-copy"><strong>Загрузить файл</strong><small id="ebookFileName">EPUB, PDF, FB2, MOBI, AZW3, DOCX</small></span>
+                <span class="upload-copy"><strong>Загрузить файл</strong><small id="ebookFileName">EPUB, PDF, FB2</small></span>
               </label>
             </div>
 
             <div>
               <span class="section-label">Аудиокнига</span>
               <label class="file-upload-zone" for="audiobookFile">
-                <input id="audiobookFile" type="file" accept=".mp3,.m4b,.aac,.flac,.zip,audio/*" hidden>
+                <input id="audiobookFile" type="file" accept=".mp3,.m4b,.aac,.flac,audio/*" hidden>
                 <span class="upload-icon">♪</span>
-                <span class="upload-copy"><strong>Загрузить аудио</strong><small id="audiobookFileName">MP3, M4B, AAC, FLAC, ZIP</small></span>
+                <span class="upload-copy"><strong>Загрузить аудио</strong><small id="audiobookFileName">MP3, M4B, AAC, FLAC</small></span>
               </label>
             </div>
 
@@ -178,6 +178,6 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script src="assets/js/auth-state.js?v=20260927-2" defer></script>
 <script src="assets/js/account-avatar.js?v=20260927-3" defer></script>
-<script src="assets/js/books.js" defer></script>
+<script src="assets/js/books.js?v=20260927-4" defer></script>
 </body>
 </html>

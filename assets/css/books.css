@@ -216,3 +216,11 @@ body.is-owner .empty-add{display:inline-flex;margin:16px auto 0}
   .empty-state{width:82%;top:46%}
   .empty-state h2{font-size:23px}
 }
+
+.book-art{position:absolute;inset:0;border-radius:inherit;background-size:cover;background-position:center;opacity:.5;filter:saturate(.85)}
+.book-spine{z-index:2;background:linear-gradient(90deg,rgba(255,255,255,.48),rgba(255,255,255,.16) 42%,rgba(20,32,45,.08))}
+.book-admin-actions{position:absolute;z-index:5;left:50%;bottom:-35px;transform:translateX(-50%);display:flex;gap:5px}
+.book-admin-actions button{width:28px;height:28px;border:1px solid rgba(255,255,255,.9);border-radius:9px;background:rgba(255,255,255,.82);color:#586a7d;box-shadow:0 6px 16px rgba(35,48,62,.12);cursor:pointer}
+.book-admin-actions button.danger{color:#9d5b60}
+.background-thumb.editable{position:relative}
+.background-remove{position:absolute;right:3px;top:3px;width:19px;height:19px;border:0;border-radius:7px;background:rgba(24,35,47,.74);color:#fff;cursor:pointer;font-size:14px;line-height:1}
