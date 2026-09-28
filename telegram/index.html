@@ -6,10 +6,10 @@
 <meta name="color-scheme" content="light">
 <title>facehub · Telegram</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../mini/style.css?v=20260928-3">
+<link rel="stylesheet" href="../mini/style.css?v=20260928-4">
 <script id="facehubMiniSdk" src="https://telegram.org/js/telegram-web-app.js?63"></script>
 <script>window.FACEHUB_MINI={platform:"telegram",label:"Telegram",api:"telegram_api.php",sdk:"https://telegram.org/js/telegram-web-app.js?63",hashKey:"tgWebAppData"};</script>
-<script src="../mini/app.js?v=20260928-2" defer></script>
+<script src="../mini/app.js?v=20260928-3" defer></script>
 </head>
 <body>
 <div class="mini-shell">
@@ -36,96 +36,45 @@
 
 <section class="mini-screen" id="homeScreen">
   <header class="app-head">
-    <div class="app-brand"><span class="brand-mark">f</span><b>facehub</b></div>
-    <button class="avatar-button" id="profileButton" type="button">
-      <span class="avatar-copy"><strong id="userName">Профиль</strong><span id="platformState">Telegram</span></span>
-      <img id="userAvatar" alt="">
-    </button>
+    <button class="head-back hidden" id="headBack" type="button" aria-label="Назад">‹</button>
+    <div class="app-title"><strong id="viewTitle">facehub</strong><span id="viewSubtitle">Telegram mini app</span></div>
+    <button class="avatar-button" id="profileButton" type="button"><img id="userAvatar" alt=""><span id="userInitial"></span></button>
   </header>
-
-  <main id="mainContent">
-    <section class="welcome">
-      <small id="greeting">Добро пожаловать</small>
-      <h1>Что почитаем<br>сегодня?</h1>
-      <p>Лента собрана специально для вертикального экрана Telegram.</p>
-    </section>
-
-    <section class="quick-strip">
-      <button class="quick-card" type="button" data-open-section="blog"><span>Последнее</span><b>Блог</b><small id="blogCount">загрузка…</small></button>
-      <button class="quick-card" type="button" data-open-section="poetry"><span>Архив</span><b>Стихи</b><small id="poemCount">загрузка…</small></button>
-    </section>
-
-    <section class="section" id="recentSection">
-      <div class="section-title"><h2>Свежее</h2><span>блог и стихи</span></div>
-      <div class="feed" id="recentFeed"><div class="empty-card">Загружаю публикации…</div></div>
-    </section>
-
-    <section class="section" id="sectionsSection">
-      <div class="section-title"><h2>Разделы</h2><span>всё пространство</span></div>
-      <nav class="nav-list">
-        <a class="nav-row" data-target="../books.html"><span class="nav-icon">Б</span><span class="nav-copy"><b>Книги</b><span>библиотека и материалы</span></span><span class="nav-arrow">›</span></a>
-        <a class="nav-row" data-target="../music.html"><span class="nav-icon">♪</span><span class="nav-copy"><b>Музыка</b><span>песни и альбомы</span></span><span class="nav-arrow">›</span></a>
-        <a class="nav-row" data-target="../portfolio.html"><span class="nav-icon">Я</span><span class="nav-copy"><b>Портфолио</b><span>профиль и доступы</span></span><span class="nav-arrow">›</span></a>
-      </nav>
-    </section>
-
-    <section class="admin-mobile hidden" id="adminPanel">
-      <div class="section-title"><h2>Создать</h2><span>для администратора</span></div>
-      <div class="admin-actions">
-        <button class="admin-action" type="button" data-compose="post"><b>Новый пост</b><span>заголовок, текст, статус</span></button>
-        <button class="admin-action" type="button" data-compose="poem"><b>Новый стих</b><span>дата, название, текст</span></button>
-        <a class="admin-action" data-target="../books.html?add=1"><b>Новая книга</b><span>открыть форму библиотеки</span></a>
-        <a class="admin-action" data-target="../music.html?add=song"><b>Новая песня</b><span>открыть форму музыки</span></a>
-      </div>
-    </section>
-
-    <div class="runtime-line"><span id="runtimeInfo">Telegram Mini App</span><button id="unbindButton" type="button">Отвязать Telegram</button></div>
-  </main>
-
+  <main id="viewRoot" class="view-root"></main>
   <nav class="bottom-nav" id="bottomNav">
-    <button class="active" type="button" data-nav="home"><i>⌂</i><span>Главная</span></button>
-    <button type="button" data-nav="blog"><i>▤</i><span>Блог</span></button>
-    <button type="button" data-nav="poetry"><i>✦</i><span>Стихи</span></button>
-    <button type="button" data-nav="more"><i>•••</i><span>Ещё</span></button>
+    <button class="active" type="button" data-view="home"><i>⌂</i><span>Главная</span></button>
+    <button type="button" data-view="books"><i>▤</i><span>Книги</span></button>
+    <button type="button" data-view="music"><i>♪</i><span>Музыка</span></button>
+    <button type="button" data-view="blog"><i>◫</i><span>Блог</span></button>
+    <button type="button" data-view="poetry"><i>✦</i><span>Стихи</span></button>
   </nav>
 </section>
 </div>
 
-<div class="sheet" id="composeSheet" aria-hidden="true">
-  <div class="sheet-panel">
-    <div class="sheet-handle"></div>
-    <div class="sheet-head"><h2>Создать</h2><button class="sheet-close" type="button" data-close-sheet="composeSheet">×</button></div>
-    <div class="sheet-tabs"><button class="active" type="button" data-compose-tab="post">Пост</button><button type="button" data-compose-tab="poem">Стих</button></div>
-    <form class="compose-form active" id="postComposeForm" data-form="post">
-      <label class="field"><span>Заголовок</span><input id="miniPostTitle" required maxlength="180"></label>
-      <label class="field"><span>Текст</span><textarea id="miniPostText" required placeholder="Текст публикации"></textarea></label>
-      <label class="field"><span>Статус</span><select id="miniPostStatus"><option value="published">Опубликовать</option><option value="draft">Сохранить черновик</option></select></label>
-      <button class="primary-action" id="miniPostSave" type="submit">Сохранить пост</button>
-      <div class="sheet-note">Для сложной публикации с фото, видео и несколькими блоками остаётся полная форма на сайте.</div>
-      <a class="secondary-action" data-target="../blog.html?new=1">Открыть расширенный редактор</a>
-    </form>
-    <form class="compose-form" id="poemComposeForm" data-form="poem">
-      <label class="field"><span>Название</span><input id="miniPoemTitle" maxlength="180"></label>
-      <div class="field-row">
-        <label class="field"><span>Год</span><input id="miniPoemYear" type="number" min="1900" max="2200" required></label>
-        <label class="field"><span>Месяц</span><input id="miniPoemMonth" type="number" min="1" max="12"></label>
-        <label class="field"><span>День</span><input id="miniPoemDay" type="number" min="1" max="31"></label>
-      </div>
-      <label class="field"><span>Текст</span><textarea id="miniPoemText" required placeholder="Текст стихотворения"></textarea></label>
-      <button class="primary-action" id="miniPoemSave" type="submit">Добавить стих</button>
-    </form>
-  </div>
-</div>
+<div class="sheet" id="readerSheet" aria-hidden="true"><div class="sheet-panel"><div class="sheet-handle"></div><div class="sheet-head"><h2 id="readerSheetTitle">Просмотр</h2><button class="sheet-close" type="button" data-close-sheet="readerSheet">×</button></div><div id="readerSheetBody"></div></div></div>
 
-<div class="sheet" id="readerSheet" aria-hidden="true">
-  <div class="sheet-panel">
-    <div class="sheet-handle"></div>
-    <div class="sheet-head"><div></div><button class="sheet-close" type="button" data-close-sheet="readerSheet">×</button></div>
-    <h2 class="reader-title" id="readerTitle"></h2>
-    <div class="reader-meta" id="readerMeta"></div>
-    <div class="reader-body" id="readerBody"></div>
-  </div>
+<div class="sheet" id="blogComposeSheet" aria-hidden="true"><div class="sheet-panel"><div class="sheet-handle"></div><div class="sheet-head"><h2>Новая публикация</h2><button class="sheet-close" type="button" data-close-sheet="blogComposeSheet">×</button></div>
+<form id="miniBlogForm">
+<label class="field"><span>Заголовок</span><input id="miniBlogTitle" required maxlength="180"></label>
+<label class="field"><span>Текст</span><textarea id="miniBlogText" required placeholder="Текст публикации"></textarea></label>
+<div class="mobile-media-picks">
+  <label class="media-pick"><input id="miniBlogCamera" type="file" accept="image/*,video/*" capture="environment" hidden><b>Камера</b><span>снять фото или видео</span></label>
+  <label class="media-pick"><input id="miniBlogGallery" type="file" accept="image/*,video/*" hidden><b>Галерея</b><span>выбрать на устройстве</span></label>
 </div>
+<div class="selected-media hidden" id="miniBlogMedia"><span id="miniBlogMediaName"></span><button type="button" id="miniBlogMediaClear">×</button></div>
+<label class="field"><span>Статус</span><select id="miniBlogStatus"><option value="published">Опубликовать</option><option value="draft">Черновик</option></select></label>
+<button class="primary-action" id="miniBlogSave" type="submit">Сохранить публикацию</button>
+</form></div></div>
+
+<div class="sheet" id="poemComposeSheet" aria-hidden="true"><div class="sheet-panel"><div class="sheet-handle"></div><div class="sheet-head"><h2>Новый стих</h2><button class="sheet-close" type="button" data-close-sheet="poemComposeSheet">×</button></div>
+<form id="miniPoemForm">
+<label class="field"><span>Название</span><input id="miniPoemTitle" maxlength="180"></label>
+<div class="field-row"><label class="field"><span>Год</span><input id="miniPoemYear" type="number" min="1900" max="2200" required></label><label class="field"><span>Месяц</span><input id="miniPoemMonth" type="number" min="1" max="12"></label><label class="field"><span>День</span><input id="miniPoemDay" type="number" min="1" max="31"></label></div>
+<label class="field"><span>Текст</span><textarea id="miniPoemText" required></textarea></label>
+<button class="primary-action" id="miniPoemSave" type="submit">Добавить стих</button>
+</form></div></div>
+
 <div class="toast" id="miniToast"></div>
+<audio id="miniAudio" preload="metadata"></audio>
 </body>
 </html>
