@@ -93,7 +93,7 @@ foliate-view{
 .reader-controls button:hover{background:rgba(255,255,255,.8)}
 .reader-progress{display:flex;align-items:center;gap:9px;flex:1}
 .reader-progress input{width:100%}
-.reader-progress span{font-size:10px;color:#71808d;min-width:34px;text-align:right}
+.reader-progress span{font-size:10px;color:#71808d;min-width:88px;text-align:right;white-space:nowrap}
 .reader-toc{
   position:absolute;
   z-index:30;
@@ -196,7 +196,7 @@ body.mini-reader .reader-controls button{
   width:42px;height:36px;
   font-size:16px
 }
-body.mini-reader .reader-progress span{font-size:9px}
+body.mini-reader .reader-progress span{font-size:9px;min-width:82px}
 body.mini-reader .reader-toc{
   width:min(330px,92vw);
   padding:
