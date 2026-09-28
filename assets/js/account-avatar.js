@@ -35,8 +35,8 @@
       links.forEach((link) => {
         link.replaceChildren();
         link.classList.add('profile-link');
-        link.title = 'Портфолио';
-        link.setAttribute('aria-label', 'Открыть портфолио');
+        link.title = 'Профиль';
+        link.setAttribute('aria-label', 'Открыть профиль');
 
         const avatar = document.createElement('span');
         avatar.className = 'account-profile-avatar';

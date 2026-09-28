@@ -33,7 +33,7 @@
 
       document.querySelectorAll('a[href="portfolio.html"]').forEach((link) => {
         link.href = 'portfolio.html';
-        if (link.textContent.trim() === 'Личный кабинет') link.textContent = 'Портфолио';
+        if (link.textContent.trim() === 'Личный кабинет') link.textContent = 'Профиль';
       });
     } catch {
       // При временной недоступности API не разлогиниваем пользователя локально.
