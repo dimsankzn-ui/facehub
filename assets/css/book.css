@@ -322,6 +322,30 @@ body.background-view-mode .background-viewer-controls{opacity:1;pointer-events:a
 @media(max-width:720px){
   .book-card{width:100%}
 }
+
+.litres-link{
+  grid-column:1/-1;
+  min-height:64px;
+  border-radius:16px;
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(255,255,255,.20);
+  display:grid;
+  grid-template-columns:92px 1fr 18px;
+  align-items:center;
+  gap:12px;
+  padding:10px 13px;
+  color:#25303b;
+  text-decoration:none;
+  box-shadow:0 10px 30px rgba(0,0,0,.09);
+  overflow:hidden;
+}
+.litres-link img{width:92px;height:auto;display:block}
+.litres-link span{font-size:10px;color:#74818d;line-height:1.3}
+.litres-link b{display:block;color:#263947;font-size:12px;margin-bottom:3px}
+.litres-link i{font-style:normal;color:#9ba7b0;font-size:22px}
+.litres-link:hover{box-shadow:0 14px 36px rgba(0,0,0,.13)}
+.apple-books{background:rgba(255,255,255,.07)}
+
 @media(prefers-reduced-motion:reduce){
   .btn:hover::after,.download:hover::after,.mini:hover::after{animation:none;opacity:.20}
 }

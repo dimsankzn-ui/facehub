@@ -95,13 +95,40 @@ function configureBackgrounds() {
   restartBackgroundTimer();
 }
 
+function isMacOS() {
+  const ua = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+  return (/Macintosh/i.test(ua) || /Mac/i.test(platform)) && (navigator.maxTouchPoints || 0) < 2;
+}
+
+function openInAppleBooks(epubUrl) {
+  if (!epubUrl) return;
+  const link = document.createElement('a');
+  link.href = mediaUrl(epubUrl);
+  link.download = '';
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  window.setTimeout(() => {
+    const frame = document.createElement('iframe');
+    frame.style.display = 'none';
+    frame.src = 'ibooks://';
+    document.body.appendChild(frame);
+    window.setTimeout(() => frame.remove(), 1600);
+  }, 450);
+
+  toast('EPUB загружается, Apple Books открывается. Если импорт не начался автоматически, откройте загруженный файл.');
+}
+
 function createDownloadRow(label, files, access, type) {
   const row = document.createElement('div');
   row.className = 'download';
 
   const icon = document.createElement('div');
   icon.className = 'download-icon';
-  icon.textContent = type === 'audio' ? '♪' : '⇩';
+  icon.textContent = type === 'audio' ? '♪' : 'Aa';
 
   const copy = document.createElement('div');
   copy.className = 'download-copy';
@@ -115,24 +142,36 @@ function createDownloadRow(label, files, access, type) {
   actions.className = 'download-actions';
 
   if (access) {
-    const open = document.createElement('button');
-    open.className = 'mini main';
-    open.type = 'button';
-    open.textContent = type === 'audio' ? 'Слушать' : 'Открыть';
-    open.addEventListener('click', () => {
-      if (type === 'audio') openAudio(files[0].path);
-      else window.open(mediaUrl(files[0].path), '_blank', 'noopener');
-    });
-    actions.appendChild(open);
+    if (type === 'audio') {
+      const listen = document.createElement('button');
+      listen.className = 'mini main';
+      listen.type = 'button';
+      listen.textContent = 'Слушать';
+      listen.addEventListener('click', () => openAudio(files[0].path));
+      actions.appendChild(listen);
+    } else {
+      const browser = document.createElement('a');
+      browser.className = 'mini main';
+      const pdf = files.find((item) => item.label === 'PDF');
+      const readable = files.find((item) => item.label === 'EPUB') || files.find((item) => item.label === 'FB2');
+      browser.href = readable ? 'reader.html?id=' + encodeURIComponent(book.id) : mediaUrl(pdf?.path || '');
+      if (!readable) {
+        browser.target = '_blank';
+        browser.rel = 'noopener';
+      }
+      browser.textContent = 'Читать в браузере';
+      actions.appendChild(browser);
 
-    files.forEach((item) => {
-      const link = document.createElement('a');
-      link.className = 'mini';
-      link.href = mediaUrl(item.path);
-      link.download = '';
-      link.textContent = item.label || extension(item.path) || 'Скачать';
-      actions.appendChild(link);
-    });
+      const epub = files.find((item) => item.label === 'EPUB');
+      if (isMacOS() && epub) {
+        const apple = document.createElement('button');
+        apple.className = 'mini apple-books';
+        apple.type = 'button';
+        apple.textContent = 'Apple Books';
+        apple.addEventListener('click', () => openInAppleBooks(epub.path));
+        actions.appendChild(apple);
+      }
+    }
   } else {
     const locked = document.createElement('button');
     locked.className = 'mini';
@@ -172,21 +211,37 @@ function configureMaterials() {
   if (audioAvailable) downloads.appendChild(createDownloadRow('Аудиокнига', audio, audioAccess, 'audio'));
 
   const external = [
-    { label: 'ЛитРес', url: book.litres_link },
     { label: 'Букмейт', url: book.bookmate_link },
     { label: 'Строки', url: book.stroki_link }
   ].filter((item) => item.url);
 
+  if (book.litres_link) {
+    const litres = document.createElement('a');
+    litres.className = 'litres-link';
+    litres.href = book.litres_link;
+    litres.target = '_blank';
+    litres.rel = 'noopener';
+    const logo = document.createElement('img');
+    logo.src = 'assets/brand/litres.svg';
+    logo.alt = 'ЛитРес';
+    const copy = document.createElement('span');
+    copy.innerHTML = '<b>Открыть в ЛитРес</b>в приложении или на сайте';
+    const arrow = document.createElement('i');
+    arrow.textContent = '›';
+    litres.append(logo, copy, arrow);
+    downloads.appendChild(litres);
+  }
+
   if (external.length) {
     const row = document.createElement('div');
-    row.className = 'download';
+    row.className = 'download external-platforms';
     const icon = document.createElement('div');
     icon.className = 'download-icon';
     icon.textContent = '↗';
     const copy = document.createElement('div');
     copy.className = 'download-copy';
     const strong = document.createElement('strong');
-    strong.textContent = 'Читать на площадке';
+    strong.textContent = 'Другие площадки';
     const caption = document.createElement('span');
     caption.textContent = external.map((item) => item.label).join(' · ');
     copy.append(strong, caption);
@@ -205,7 +260,7 @@ function configureMaterials() {
     downloads.appendChild(row);
   }
 
-  if (!ebookAvailable && !audioAvailable && !external.length) {
+  if (!ebookAvailable && !audioAvailable && !book.litres_link && !external.length) {
     const message = document.createElement('p');
     message.className = 'description';
     message.textContent = 'Для этой книги пока не загружены материалы.';

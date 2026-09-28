@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Читалка — facehub</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/css/reader.css?v=20260928-1">
+</head>
+<body>
+<div class="reader-app">
+  <header class="reader-header">
+    <a class="reader-back" id="readerBack" href="books.html">← К книге</a>
+    <div class="reader-title">
+      <strong id="readerTitle">Загрузка…</strong>
+      <span id="readerChapter"></span>
+    </div>
+    <button class="reader-menu-button" id="tocButton" type="button">Оглавление</button>
+  </header>
+
+  <aside class="reader-toc" id="readerToc" aria-hidden="true">
+    <div class="reader-toc-head"><strong>Оглавление</strong><button id="tocClose" type="button">×</button></div>
+    <div class="reader-toc-list" id="tocList"></div>
+  </aside>
+
+  <main class="reader-stage" id="readerStage">
+    <div class="reader-loading" id="readerLoading">Открываю книгу…</div>
+  </main>
+
+  <div class="reader-controls">
+    <button id="prevPage" type="button">←</button>
+    <div class="reader-progress">
+      <input id="progressRange" type="range" min="0" max="1" step="0.001" value="0">
+      <span id="progressText">0%</span>
+    </div>
+    <button id="nextPage" type="button">→</button>
+  </div>
+</div>
+<script type="module" src="assets/js/reader.js?v=20260928-1"></script>
+</body>
+</html>
