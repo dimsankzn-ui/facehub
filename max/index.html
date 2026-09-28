@@ -6,24 +6,20 @@
 <meta name="color-scheme" content="light">
 <title>facehub · MAX</title>
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="../mini/style.css?v=20260928-2">
+<link rel="stylesheet" href="../mini/style.css?v=20260928-3">
 <script id="facehubMiniSdk" src="https://st.max.ru/js/max-web-app.js"></script>
-<script>
-window.FACEHUB_MINI={platform:"max",label:"MAX",api:"max_api.php",sdk:"https://st.max.ru/js/max-web-app.js",hashKey:"WebAppData"};
-</script>
-<script src="../mini/app.js?v=20260928-1" defer></script>
+<script>window.FACEHUB_MINI={platform:"max",label:"MAX",api:"max_api.php",sdk:"https://st.max.ru/js/max-web-app.js",hashKey:"WebAppData"};</script>
+<script src="../mini/app.js?v=20260928-2" defer></script>
 </head>
 <body>
 <div class="mini-shell">
-<div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
-
 <section class="mini-screen active" id="loadingScreen">
   <div class="loading-mark">f</div><strong>facehub</strong><span id="loadingStatus">Подключаю аккаунт…</span>
 </section>
 
 <section class="mini-screen" id="bindingScreen">
-  <div class="mini-brand"><span class="brand-mark">f</span><b>facehub</b></div>
   <div class="binding-card">
+    <div class="mini-brand"><span class="brand-mark">f</span><b>facehub</b></div>
     <div class="eyebrow">Первая синхронизация</div>
     <h1>Привязать MAX</h1>
     <p id="bindingText">Свяжите MAX с существующим аккаунтом facehub.</p>
@@ -39,44 +35,97 @@ window.FACEHUB_MINI={platform:"max",label:"MAX",api:"max_api.php",sdk:"https://s
 </section>
 
 <section class="mini-screen" id="homeScreen">
-  <header class="mini-header">
-    <div class="mini-brand"><span class="brand-mark">f</span><b>facehub</b></div>
-    <div class="mini-user"><div><strong id="userName">Профиль</strong><span id="platformState">MAX</span></div><img id="userAvatar" alt=""></div>
+  <header class="app-head">
+    <div class="app-brand"><span class="brand-mark">f</span><b>facehub</b></div>
+    <button class="avatar-button" id="profileButton" type="button">
+      <span class="avatar-copy"><strong id="userName">Профиль</strong><span id="platformState">MAX</span></span>
+      <img id="userAvatar" alt="">
+    </button>
   </header>
 
-  <main class="mini-home">
-    <div class="mini-intro">
-      <div class="eyebrow">Авторское пространство</div>
-      <h1>Проза, музыка<br>и тексты.</h1>
-      <p>Все разделы facehub доступны прямо внутри MAX.</p>
-    </div>
+  <main id="mainContent">
+    <section class="welcome">
+      <small id="greeting">Добро пожаловать</small>
+      <h1>Что почитаем<br>сегодня?</h1>
+      <p>Лента собрана специально для вертикального экрана MAX.</p>
+    </section>
 
-    <nav class="section-grid" id="sectionGrid">
-      <a data-target="../books.html"><span>01</span><b>Книги</b><small>проза и материалы</small></a>
-      <a data-target="../blog.html"><span>02</span><b>Блог</b><small>публикации и заметки</small></a>
-      <a data-target="../poetry.html"><span>03</span><b>Стихи</b><small>архив текстов</small></a>
-      <a data-target="../music.html"><span>04</span><b>Музыка</b><small>песни и альбомы</small></a>
-      <a data-target="../portfolio.html"><span>05</span><b>Портфолио</b><small>профиль и доступы</small></a>
-    </nav>
+    <section class="quick-strip">
+      <button class="quick-card" type="button" data-open-section="blog"><span>Последнее</span><b>Блог</b><small id="blogCount">загрузка…</small></button>
+      <button class="quick-card" type="button" data-open-section="poetry"><span>Архив</span><b>Стихи</b><small id="poemCount">загрузка…</small></button>
+    </section>
 
-    <section class="admin-panel hidden" id="adminPanel">
-      <div class="admin-head"><div><span>Администратор</span><h2>Быстрые действия</h2></div><i>только для вас</i></div>
-      <div class="admin-grid">
-        <a data-target="../blog.html?new=1">+ Новый пост</a>
-        <a data-target="../poetry.html?new=1">+ Новый стих</a>
-        <a data-target="../books.html?add=1">+ Новая книга</a>
-        <a data-target="../music.html?add=song">+ Новая песня</a>
-        <a data-target="../music.html?add=album">+ Новый альбом</a>
-        <a data-target="../portfolio.html?admin=users">Пользователи</a>
+    <section class="section" id="recentSection">
+      <div class="section-title"><h2>Свежее</h2><span>блог и стихи</span></div>
+      <div class="feed" id="recentFeed"><div class="empty-card">Загружаю публикации…</div></div>
+    </section>
+
+    <section class="section" id="sectionsSection">
+      <div class="section-title"><h2>Разделы</h2><span>всё пространство</span></div>
+      <nav class="nav-list">
+        <a class="nav-row" data-target="../books.html"><span class="nav-icon">Б</span><span class="nav-copy"><b>Книги</b><span>библиотека и материалы</span></span><span class="nav-arrow">›</span></a>
+        <a class="nav-row" data-target="../music.html"><span class="nav-icon">♪</span><span class="nav-copy"><b>Музыка</b><span>песни и альбомы</span></span><span class="nav-arrow">›</span></a>
+        <a class="nav-row" data-target="../portfolio.html"><span class="nav-icon">Я</span><span class="nav-copy"><b>Портфолио</b><span>профиль и доступы</span></span><span class="nav-arrow">›</span></a>
+      </nav>
+    </section>
+
+    <section class="admin-mobile hidden" id="adminPanel">
+      <div class="section-title"><h2>Создать</h2><span>для администратора</span></div>
+      <div class="admin-actions">
+        <button class="admin-action" type="button" data-compose="post"><b>Новый пост</b><span>заголовок, текст, статус</span></button>
+        <button class="admin-action" type="button" data-compose="poem"><b>Новый стих</b><span>дата, название, текст</span></button>
+        <a class="admin-action" data-target="../books.html?add=1"><b>Новая книга</b><span>открыть форму библиотеки</span></a>
+        <a class="admin-action" data-target="../music.html?add=song"><b>Новая песня</b><span>открыть форму музыки</span></a>
       </div>
     </section>
+
+    <div class="runtime-line"><span id="runtimeInfo">MAX Mini App</span><button id="unbindButton" type="button">Отвязать MAX</button></div>
   </main>
 
-  <footer class="mini-footer">
-    <span id="runtimeInfo">MAX Mini App</span>
-    <button id="unbindButton" type="button">Отвязать MAX</button>
-  </footer>
+  <nav class="bottom-nav" id="bottomNav">
+    <button class="active" type="button" data-nav="home"><i>⌂</i><span>Главная</span></button>
+    <button type="button" data-nav="blog"><i>▤</i><span>Блог</span></button>
+    <button type="button" data-nav="poetry"><i>✦</i><span>Стихи</span></button>
+    <button type="button" data-nav="more"><i>•••</i><span>Ещё</span></button>
+  </nav>
 </section>
 </div>
+
+<div class="sheet" id="composeSheet" aria-hidden="true">
+  <div class="sheet-panel">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head"><h2>Создать</h2><button class="sheet-close" type="button" data-close-sheet="composeSheet">×</button></div>
+    <div class="sheet-tabs"><button class="active" type="button" data-compose-tab="post">Пост</button><button type="button" data-compose-tab="poem">Стих</button></div>
+    <form class="compose-form active" id="postComposeForm" data-form="post">
+      <label class="field"><span>Заголовок</span><input id="miniPostTitle" required maxlength="180"></label>
+      <label class="field"><span>Текст</span><textarea id="miniPostText" required placeholder="Текст публикации"></textarea></label>
+      <label class="field"><span>Статус</span><select id="miniPostStatus"><option value="published">Опубликовать</option><option value="draft">Сохранить черновик</option></select></label>
+      <button class="primary-action" id="miniPostSave" type="submit">Сохранить пост</button>
+      <div class="sheet-note">Для сложной публикации с фото, видео и несколькими блоками остаётся полная форма на сайте.</div>
+      <a class="secondary-action" data-target="../blog.html?new=1">Открыть расширенный редактор</a>
+    </form>
+    <form class="compose-form" id="poemComposeForm" data-form="poem">
+      <label class="field"><span>Название</span><input id="miniPoemTitle" maxlength="180"></label>
+      <div class="field-row">
+        <label class="field"><span>Год</span><input id="miniPoemYear" type="number" min="1900" max="2200" required></label>
+        <label class="field"><span>Месяц</span><input id="miniPoemMonth" type="number" min="1" max="12"></label>
+        <label class="field"><span>День</span><input id="miniPoemDay" type="number" min="1" max="31"></label>
+      </div>
+      <label class="field"><span>Текст</span><textarea id="miniPoemText" required placeholder="Текст стихотворения"></textarea></label>
+      <button class="primary-action" id="miniPoemSave" type="submit">Добавить стих</button>
+    </form>
+  </div>
+</div>
+
+<div class="sheet" id="readerSheet" aria-hidden="true">
+  <div class="sheet-panel">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head"><div></div><button class="sheet-close" type="button" data-close-sheet="readerSheet">×</button></div>
+    <h2 class="reader-title" id="readerTitle"></h2>
+    <div class="reader-meta" id="readerMeta"></div>
+    <div class="reader-body" id="readerBody"></div>
+  </div>
+</div>
+<div class="toast" id="miniToast"></div>
 </body>
 </html>
