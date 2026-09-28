@@ -34,6 +34,55 @@ if (role) document.body.classList.add('is-authenticated');
     }, {passive:true});
   }
 
+  if (!reduceMotion && typeof Element.prototype.animate === 'function') {
+    document.querySelectorAll('.glass-panel').forEach((panel) => {
+      const layer = document.createElement('span');
+      layer.className = 'glass-iridescence';
+      layer.setAttribute('aria-hidden', 'true');
+      panel.prepend(layer);
+
+      const animation = layer.animate([
+        {
+          transform:'translate3d(-34%,10%,0) rotate(-5deg) scale(1)',
+          opacity:0
+        },
+        {
+          transform:'translate3d(34%,-8%,0) rotate(4deg) scale(1.08)',
+          opacity:.72
+        }
+      ], {
+        duration:2800,
+        easing:'cubic-bezier(.22,.61,.36,1)',
+        fill:'both'
+      });
+
+      animation.pause();
+      animation.currentTime = 0;
+
+      panel.addEventListener('pointerenter', () => {
+        panel.classList.add('is-iridescent');
+        animation.playbackRate = 1;
+        animation.play();
+      });
+
+      panel.addEventListener('pointerleave', () => {
+        animation.playbackRate = -1;
+        animation.play();
+      });
+
+      animation.addEventListener('finish', () => {
+        if (animation.playbackRate < 0) {
+          animation.currentTime = 0;
+          animation.pause();
+          panel.classList.remove('is-iridescent');
+        } else {
+          animation.currentTime = 2800;
+          animation.pause();
+        }
+      });
+    });
+  }
+
   const donate = document.getElementById('donateLink');
   if (donate) {
     fetch('api.php', {

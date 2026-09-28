@@ -187,8 +187,8 @@ button,input,textarea,select{font:inherit}
   -webkit-mask-composite:xor;
   mask-composite:exclude;
 }
-.glass-panel:after{
-  content:"";
+.glass-panel:after{content:none}
+.glass-iridescence{
   position:absolute;
   inset:-30%;
   border-radius:inherit;
@@ -207,20 +207,12 @@ button,input,textarea,select{font:inherit}
       transparent 78%
     );
   filter:blur(12px) saturate(145%);
-  transform:translate3d(-34%,10%,0) rotate(-5deg);
-  transition:opacity .45s ease;
+  transform:translate3d(-34%,10%,0) rotate(-5deg) scale(1);
+  will-change:transform,opacity;
 }
-.glass-panel:hover:after{
-  opacity:.72;
-  animation:glassIridescence 2.8s cubic-bezier(.22,.61,.36,1) infinite alternate;
-}
-.glass-panel:hover:before{
+.glass-panel.is-iridescent:before{
   backdrop-filter:blur(16px) saturate(235%) contrast(120%) brightness(1.055);
   -webkit-backdrop-filter:blur(16px) saturate(235%) contrast(120%) brightness(1.055);
-}
-@keyframes glassIridescence{
-  0%{transform:translate3d(-34%,10%,0) rotate(-5deg) scale(1)}
-  100%{transform:translate3d(34%,-8%,0) rotate(4deg) scale(1.08)}
 }
 
 .hero-panel{
@@ -387,7 +379,7 @@ button,input,textarea,select{font:inherit}
 }
 
 @media(prefers-reduced-motion:reduce){
-  .orb,.color-island,.orbit,.light-sweep,.status-dot,.live-wave i,.glass-panel:hover:after{animation:none!important}
-  .glass-panel:hover:after{opacity:.18}
+  .orb,.color-island,.orbit,.light-sweep,.status-dot,.live-wave i{animation:none!important}
+  .glass-iridescence{display:none}
   .spectral-source{display:none}
 }
