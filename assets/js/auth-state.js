@@ -31,8 +31,8 @@
       document.body.classList.add('is-authenticated');
       document.body.classList.toggle('is-owner', role === 'owner');
 
-      document.querySelectorAll('a[href="portfolio.html"]').forEach((link) => {
-        link.href = 'portfolio.html';
+      document.querySelectorAll('a[href="profile.html"]').forEach((link) => {
+        link.href = 'profile.html';
         if (link.textContent.trim() === 'Личный кабинет') link.textContent = 'Профиль';
       });
     } catch {

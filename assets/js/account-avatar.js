@@ -1,5 +1,5 @@
 (() => {
-  const links = [...document.querySelectorAll('a.account-link[href="portfolio.html"]')];
+  const links = [...document.querySelectorAll('a.account-link[href="profile.html"]')];
   if (!links.length) return;
 
   function fallbackIcon() {

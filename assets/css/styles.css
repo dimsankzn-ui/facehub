@@ -259,10 +259,10 @@ button,input,textarea,select{font:inherit}
 .hub-tile small{display:block;color:#8698a8;font-size:8px;text-transform:uppercase;letter-spacing:.13em;margin:4px 0}
 .hub-tile strong{display:block;font-size:17px;font-weight:450;letter-spacing:-.035em}
 .hub-tile>span{grid-column:1/-1;align-self:end;font-size:10px;line-height:1.4;color:#70808f;max-width:190px}
-.tile-books{right:20%;top:9%;width:20.5%;height:25%;transform:translate3d(calc(var(--mx)*-.10),calc(var(--my)*-.10),0) rotate(1.2deg)}
-.tile-music{right:3.6%;top:22%;width:15.5%;height:22%;transform:translate3d(calc(var(--mx)*-.15),calc(var(--my)*-.05),0) rotate(-1.8deg)}
-.tile-poetry{right:22%;bottom:15%;width:18%;height:24%;transform:translate3d(calc(var(--mx)*-.08),calc(var(--my)*-.14),0) rotate(-.8deg)}
-.tile-blog{right:5%;bottom:14%;width:16%;height:23%;transform:translate3d(calc(var(--mx)*-.13),calc(var(--my)*-.12),0) rotate(1.2deg)}
+.tile-books{right:19%;top:15%;width:21%;height:25%;transform:translate3d(calc(var(--mx)*-.10),calc(var(--my)*-.10),0) rotate(1.2deg)}
+.tile-music{right:3%;top:19%;width:15%;height:23%;transform:translate3d(calc(var(--mx)*-.15),calc(var(--my)*-.05),0) rotate(-1.8deg)}
+.tile-poetry{right:19%;top:42%;width:19%;height:25%;transform:translate3d(calc(var(--mx)*-.08),calc(var(--my)*-.14),0) rotate(-.8deg)}
+.tile-blog{right:3%;top:44%;width:16%;height:23%;transform:translate3d(calc(var(--mx)*-.13),calc(var(--my)*-.12),0) rotate(1.2deg)}
 .tile-books .tile-icon{box-shadow:inset 0 1px 0 #fff,0 8px 20px rgba(65,142,222,.12)}
 .tile-music .tile-icon{box-shadow:inset 0 1px 0 #fff,0 8px 20px rgba(164,90,217,.14)}
 .tile-poetry .tile-icon{box-shadow:inset 0 1px 0 #fff,0 8px 20px rgba(232,88,161,.11)}
@@ -319,7 +319,7 @@ button,input,textarea,select{font:inherit}
   .brand{gap:9px;font-size:14px}.logo{width:31px;height:31px}
   .account-link{height:34px;padding:0 11px;font-size:10px}
   .home-main{height:calc(100% - 46px);padding-top:8px}
-  .hub-stage{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) auto auto;gap:8px}
+  .hub-stage{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr) auto auto;gap:6px}
   .hero-panel,.hub-tile,.live-note{position:relative;inset:auto!important;transform:none!important;width:auto;height:auto}
   .hero-panel{grid-column:1/-1;min-height:0;border-radius:27px;padding:23px 21px}
   .hero-copy{margin:auto 0}

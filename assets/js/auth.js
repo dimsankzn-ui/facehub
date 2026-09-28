@@ -168,7 +168,7 @@ $('#loginForm').addEventListener('submit', async (event) => {
     const auth = await api('check_auth');
     saveLocalAuth(auth);
     setMessage('loginMessage', 'Вход выполнен. Открываю личное пространство…', 'success');
-    setTimeout(() => location.href = 'portfolio.html', 350);
+    setTimeout(() => location.href = 'profile.html', 350);
   } catch {
     setMessage('loginMessage', 'Не удалось связаться с сервером авторизации.', 'error');
   } finally {
@@ -227,7 +227,7 @@ $('#registerForm').addEventListener('submit', async (event) => {
     const auth = await api('check_auth');
     saveLocalAuth(auth);
     setMessage('registerMessage', 'Аккаунт создан. Открываю личное пространство…', 'success');
-    setTimeout(() => location.href = 'portfolio.html', 450);
+    setTimeout(() => location.href = 'profile.html', 450);
   } catch {
     setMessage('registerMessage', 'Не удалось связаться с сервером авторизации.', 'error');
   } finally {
