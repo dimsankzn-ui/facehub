@@ -196,3 +196,132 @@ body.background-view-mode .background-viewer-controls{opacity:1;pointer-events:a
 }
 .download{background:rgba(255,255,255,.035)}
 .background-view-toggle:focus-visible{outline:1px solid rgba(255,255,255,.58);outline-offset:3px}
+
+
+/* 2026-09-28 — прозрачное стекло карточки книги */
+.book-content{
+  align-items:flex-end;
+  justify-content:flex-start;
+}
+.book-card{
+  position:relative;
+  width:min(900px,76vw);
+  overflow:hidden;
+  isolation:isolate;
+  background:rgba(7,14,22,.10);
+  border:1px solid rgba(255,255,255,.085);
+  backdrop-filter:blur(11px) saturate(132%) brightness(.99);
+  -webkit-backdrop-filter:blur(11px) saturate(132%) brightness(.99);
+  box-shadow:0 24px 72px rgba(0,0,0,.12);
+}
+.book-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  padding:11px;
+  border-radius:inherit;
+  pointer-events:none;
+  background:transparent;
+  backdrop-filter:blur(17px) saturate(205%) contrast(114%) brightness(1.025);
+  -webkit-backdrop-filter:blur(17px) saturate(205%) contrast(114%) brightness(1.025);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  z-index:1;
+}
+.book-card>*,.download>*{position:relative;z-index:2}
+.book-card h1{
+  text-shadow:0 2px 18px rgba(0,0,0,.28);
+}
+.book-card .description{
+  color:rgba(246,249,252,.80);
+  text-shadow:0 1px 12px rgba(0,0,0,.34);
+}
+.kicker,.access-title{
+  text-shadow:0 1px 8px rgba(0,0,0,.32);
+}
+.access{
+  border-top-color:rgba(255,255,255,.09);
+}
+
+/* Интерактивные элементы переливаются, не становясь белее */
+.btn,.download,.mini{
+  position:relative;
+  overflow:hidden;
+  isolation:isolate;
+}
+.btn::after,.download::after,.mini::after{
+  content:"";
+  position:absolute;
+  inset:-45%;
+  pointer-events:none;
+  z-index:1;
+  opacity:0;
+  background:linear-gradient(
+    112deg,
+    transparent 24%,
+    rgba(52,212,196,.12) 34%,
+    rgba(67,137,255,.18) 43%,
+    rgba(153,85,236,.17) 52%,
+    rgba(244,91,172,.14) 61%,
+    rgba(255,176,77,.10) 68%,
+    transparent 78%
+  );
+  filter:blur(10px) saturate(150%);
+  transform:translate3d(-34%,12%,0) rotate(-6deg);
+  transition:opacity .35s ease;
+}
+.btn:hover::after,.download:hover::after,.mini:hover::after{
+  opacity:.78;
+  animation:bookGlassIridescence 2.6s cubic-bezier(.22,.61,.36,1) infinite alternate;
+}
+.btn:hover,.download:hover,.mini:hover{
+  box-shadow:0 12px 34px rgba(0,0,0,.10);
+}
+.btn.primary{
+  color:#fff;
+  background:rgba(255,255,255,.11);
+  border:1px solid rgba(255,255,255,.14);
+  backdrop-filter:blur(9px) saturate(135%);
+  -webkit-backdrop-filter:blur(9px) saturate(135%);
+  font-weight:500;
+}
+.btn.glass{
+  background:rgba(255,255,255,.045);
+  border-color:rgba(255,255,255,.11);
+}
+.download{
+  background:rgba(255,255,255,.022);
+  border-color:rgba(255,255,255,.08);
+  backdrop-filter:blur(7px) saturate(122%);
+  -webkit-backdrop-filter:blur(7px) saturate(122%);
+  transition:box-shadow .3s ease,background .3s ease;
+}
+.download:hover{background:rgba(255,255,255,.028)}
+.download-icon{
+  background:rgba(255,255,255,.075);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.mini{
+  background:rgba(255,255,255,.045);
+  border-color:rgba(255,255,255,.09);
+}
+.mini.main{
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  border-color:rgba(255,255,255,.12);
+}
+@keyframes bookGlassIridescence{
+  0%{transform:translate3d(-34%,12%,0) rotate(-6deg) scale(1)}
+  100%{transform:translate3d(34%,-10%,0) rotate(5deg) scale(1.07)}
+}
+@media(max-width:1000px){
+  .book-card{width:min(900px,90vw)}
+}
+@media(max-width:720px){
+  .book-card{width:100%}
+}
+@media(prefers-reduced-motion:reduce){
+  .btn:hover::after,.download:hover::after,.mini:hover::after{animation:none;opacity:.20}
+}

@@ -319,12 +319,10 @@ function populateBook() {
   $('#audioBookTitle').textContent = book.title;
   $('#audioHeading').textContent = book.title;
   $('#trailerTitle').textContent = book.title;
-  $('#bookCoverView').dataset.title = book.title;
   $('#audioCover').dataset.title = book.title;
 
   if (book.cover) {
     const cover = mediaUrl(book.cover);
-    $('#bookCoverView').style.backgroundImage = 'url("' + cover + '")';
     $('#audioCover').style.backgroundImage = 'url("' + cover + '")';
   }
 
