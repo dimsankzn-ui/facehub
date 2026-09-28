@@ -108,7 +108,7 @@ function createDownloadRow(label, files, access, type) {
   const strong = document.createElement('strong');
   strong.textContent = label;
   const formats = document.createElement('span');
-  formats.textContent = files.map((item) => extension(item.path)).join(' · ');
+  formats.textContent = files.length ? files.map((item) => item.label || extension(item.path)).join(' · ') : 'Материал доступен по аккаунту';
   copy.append(strong, formats);
 
   const actions = document.createElement('div');
@@ -130,7 +130,7 @@ function createDownloadRow(label, files, access, type) {
       link.className = 'mini';
       link.href = mediaUrl(item.path);
       link.download = '';
-      link.textContent = extension(item.path) || 'Скачать';
+      link.textContent = item.label || extension(item.path) || 'Скачать';
       actions.appendChild(link);
     });
   } else {
@@ -151,22 +151,25 @@ function configureMaterials() {
   downloads.replaceChildren();
 
   const ebooks = [
-    { path: book.file_epub },
-    { path: book.file_pdf },
-    { path: book.file_fb2 }
+    { path: book.file_epub, label: 'EPUB' },
+    { path: book.file_pdf, label: 'PDF' },
+    { path: book.file_fb2, label: 'FB2' }
   ].filter((item) => item.path);
 
   const audio = [
-    { path: book.file_audio },
-    { path: book.file_m4b }
+    { path: book.file_audio, label: 'Аудио' },
+    { path: book.file_m4b, label: 'M4B' }
   ].filter((item) => item.path);
+
+  const ebookAvailable = Boolean(book.ebook_available) || ebooks.length > 0;
+  const audioAvailable = Boolean(book.audio_available) || audio.length > 0;
 
   const isAdmin = auth.logged_in && auth.role === 'admin';
   const ebookAccess = isAdmin || (auth.logged_in && (Number(book.price_ebook || 0) === 0 || hasAccess));
   const audioAccess = isAdmin || (auth.logged_in && (Number(book.price_audio || 0) === 0 || hasAccess));
 
-  if (ebooks.length) downloads.appendChild(createDownloadRow('Электронная книга', ebooks, ebookAccess, 'ebook'));
-  if (audio.length) downloads.appendChild(createDownloadRow('Аудиокнига', audio, audioAccess, 'audio'));
+  if (ebookAvailable) downloads.appendChild(createDownloadRow('Электронная книга', ebooks, ebookAccess, 'ebook'));
+  if (audioAvailable) downloads.appendChild(createDownloadRow('Аудиокнига', audio, audioAccess, 'audio'));
 
   const external = [
     { label: 'ЛитРес', url: book.litres_link },
@@ -202,7 +205,7 @@ function configureMaterials() {
     downloads.appendChild(row);
   }
 
-  if (!ebooks.length && !audio.length && !external.length) {
+  if (!ebookAvailable && !audioAvailable && !external.length) {
     const message = document.createElement('p');
     message.className = 'description';
     message.textContent = 'Для этой книги пока не загружены материалы.';
