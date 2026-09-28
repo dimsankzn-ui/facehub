@@ -72,8 +72,9 @@ function bookFile(kind,path){if(!path)return null;var mime={epub:"application/ep
 function bookFileFromPath(path,fallback){if(!path)return null;var clean=String(path).split(/[?#]/)[0],ext=(clean.split(".").pop()||fallback||"bin").toLowerCase(),mime={m4b:"audio/mp4",m4a:"audio/mp4",mp3:"audio/mpeg",wav:"audio/wav",aac:"audio/aac",ogg:"audio/ogg"}[ext]||"audio/*";return{kind:ext,path:path,mime:mime,ext:ext}}
 function safeBookName(title,ext){return String(title||"Книга").replace(/[\\/:*?"<>|]+/g," ").trim()+"."+ext}
 function isAndroid(){return /Android/i.test(navigator.userAgent||"")}
+function isIOS(){return /iPad|iPhone|iPod/i.test(navigator.userAgent||"")}
 function openBookFileFlow(title,type,files){if(!files||!files.length)return;openBookInSystem(files[0])}
-function openBookInSystem(item){var url=mediaUrl(item.path);if(isAndroid()){try{var u=new URL(url),intent="intent://"+u.host+u.pathname+u.search+"#Intent;scheme="+u.protocol.replace(":","")+";action=android.intent.action.VIEW;type="+(item.mime||"application/octet-stream")+";S.browser_fallback_url="+encodeURIComponent(url)+";end";location.href=intent;return}catch(e){}}var a=document.createElement("a");a.href=url;a.target="_blank";a.rel="noopener";document.body.appendChild(a);a.click();a.remove()}
+function openBookInSystem(item){var url=mediaUrl(item.path);if(isAndroid()){try{var u=new URL(url),intent="intent://"+u.host+u.pathname+u.search+"#Intent;scheme="+u.protocol.replace(":","")+";action=android.intent.action.VIEW;category=android.intent.category.BROWSABLE;type="+(item.mime||"application/octet-stream")+";end";location.href=intent;return}catch(e){toast("Не удалось вызвать приложение для чтения");return}}if(isIOS()){toast("iOS не разрешает mini app напрямую передать EPUB в «Книги» без нативного моста");return}toast("Для этой платформы прямое открытие книги в приложении недоступно")}
 
 async function loadMusic(force){if(cache.music&&!force)return cache.music;var d=await siteApi("get_music_data");cache.music={albums:Array.isArray(d.albums)?d.albums:[],songs:Array.isArray(d.songs)?d.songs:[]};return cache.music}
 async function renderMusic(){
