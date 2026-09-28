@@ -187,8 +187,8 @@ button,input,textarea,select{font:inherit}
   -webkit-mask-composite:xor;
   mask-composite:exclude;
 }
-.glass-panel:after{content:none}
-.glass-iridescence{
+.glass-panel:after{
+  content:"";
   position:absolute;
   inset:-30%;
   border-radius:inherit;
@@ -198,19 +198,26 @@ button,input,textarea,select{font:inherit}
   background:
     linear-gradient(
       112deg,
-      transparent 23%,
-      rgba(60,214,197,.12) 34%,
-      rgba(67,137,255,.16) 43%,
-      rgba(151,87,235,.15) 51%,
-      rgba(244,91,171,.13) 59%,
-      rgba(255,175,76,.10) 67%,
-      transparent 78%
+      transparent 20%,
+      rgba(48,222,200,.18) 32%,
+      rgba(58,134,255,.23) 42%,
+      rgba(151,82,240,.22) 51%,
+      rgba(246,81,171,.19) 60%,
+      rgba(255,175,72,.15) 69%,
+      transparent 80%
     );
-  filter:blur(12px) saturate(145%);
+  filter:blur(11px) saturate(165%);
   transform:translate3d(-34%,10%,0) rotate(-5deg) scale(1);
+  transition:
+    transform 2.8s cubic-bezier(.22,.61,.36,1),
+    opacity .42s ease;
   will-change:transform,opacity;
 }
-.glass-panel.is-iridescent:before{
+.glass-panel:hover:after{
+  opacity:.82;
+  transform:translate3d(34%,-8%,0) rotate(4deg) scale(1.08);
+}
+.glass-panel:hover:before{
   backdrop-filter:blur(16px) saturate(235%) contrast(120%) brightness(1.055);
   -webkit-backdrop-filter:blur(16px) saturate(235%) contrast(120%) brightness(1.055);
 }
@@ -380,6 +387,7 @@ button,input,textarea,select{font:inherit}
 
 @media(prefers-reduced-motion:reduce){
   .orb,.color-island,.orbit,.light-sweep,.status-dot,.live-wave i{animation:none!important}
-  .glass-iridescence{display:none}
+  .glass-panel:after{transition:none!important}
+  .glass-panel:hover:after{opacity:.18;transform:translate3d(-34%,10%,0) rotate(-5deg) scale(1)}
   .spectral-source{display:none}
 }
