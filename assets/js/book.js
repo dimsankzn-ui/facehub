@@ -112,12 +112,8 @@ function openInAppleBooks(epubUrl) {
   link.remove();
 
   window.setTimeout(() => {
-    const frame = document.createElement('iframe');
-    frame.style.display = 'none';
-    frame.src = 'ibooks://';
-    document.body.appendChild(frame);
-    window.setTimeout(() => frame.remove(), 1600);
-  }, 450);
+    window.location.href = 'ibooks://';
+  }, 300);
 
   toast('EPUB загружается, Apple Books открывается. Если импорт не начался автоматически, откройте загруженный файл.');
 }
@@ -369,8 +365,6 @@ function populateBook() {
   document.title = book.title + ' — facehub';
   $('#bookTitleView').textContent = book.title;
   $('#bookDescriptionView').textContent = book.annotation || 'Описание книги появится здесь.';
-  $('#readerBookTitle').textContent = book.title;
-  $('#readerHeading').textContent = book.title;
   $('#audioBookTitle').textContent = book.title;
   $('#audioHeading').textContent = book.title;
   $('#trailerTitle').textContent = book.title;
@@ -420,20 +414,6 @@ document.querySelectorAll('[data-close]').forEach((button) => {
 $('#trailerOverlay').addEventListener('click', (event) => {
   if (event.target.closest('.trailer-frame')) return;
   closeOverlay('trailerOverlay');
-});
-
-let readerFont = 17;
-$('#fontPlus').addEventListener('click', () => {
-  readerFont = Math.min(24, readerFont + 1);
-  document.querySelectorAll('.reader-page p').forEach((p) => p.style.fontSize = readerFont + 'px');
-});
-$('#fontMinus').addEventListener('click', () => {
-  readerFont = Math.max(13, readerFont - 1);
-  document.querySelectorAll('.reader-page p').forEach((p) => p.style.fontSize = readerFont + 'px');
-});
-$('#readerTheme').addEventListener('click', () => {
-  $('#readerPage').classList.toggle('dark');
-  $('#readerTheme').textContent = $('#readerPage').classList.contains('dark') ? 'Тёмная тема' : 'Светлая тема';
 });
 
 async function init() {
