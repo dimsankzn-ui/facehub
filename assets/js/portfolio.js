@@ -51,7 +51,7 @@ function formatCreated(value) {
 function getInitials(user) {
   const parts = [user.first_name, user.last_name].filter(Boolean);
   if (!parts.length && user.email) return user.email.slice(0, 2).toUpperCase();
-  return parts.map((part) => part.trim()[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || 'ДС';
+  return parts.map((part) => part.trim()[0]).filter(Boolean).slice(0, 2).join('').toUpperCase() || '•';
 }
 
 function setAvatar(path) {
