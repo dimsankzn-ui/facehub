@@ -172,6 +172,25 @@ button,a{-webkit-tap-highlight-color:transparent}
   box-shadow:var(--shadow);backdrop-filter:blur(28px) saturate(130%);
 }
 .admin-users[hidden]{display:none}
+.admin-settings{
+  margin-top:18px;
+  padding:24px 26px 26px;
+  border-radius:30px;
+  background:var(--glass);
+  border:1px solid rgba(255,255,255,.94);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(28px) saturate(130%);
+}
+.admin-settings[hidden]{display:none}
+.donation-settings-form{
+  display:grid;
+  grid-template-columns:minmax(0,1fr);
+  gap:4px;
+}
+.donation-settings-form .field input{
+  background:rgba(247,250,252,.78);
+}
+
 .admin-users-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:16px}
 .admin-users-head span{font-size:10px;text-transform:uppercase;letter-spacing:.12em;color:#8a97a3}
 .admin-users-head h2{font-size:30px;font-weight:300;letter-spacing:-.045em;margin:5px 0 0}

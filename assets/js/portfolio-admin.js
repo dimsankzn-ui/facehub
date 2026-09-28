@@ -497,6 +497,40 @@
     }
   });
 
+  $('#donationSettingsForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const input = $('#donationLinkInput');
+    const message = $('#donationMessage');
+    const value = input.value.trim();
+
+    if (value && !/^https?:\/\//i.test(value)) {
+      message.textContent = 'Укажите ссылку, начинающуюся с http:// или https://';
+      message.classList.remove('success');
+      message.classList.add('error');
+      return;
+    }
+
+    const button = event.currentTarget.querySelector('button[type="submit"]');
+    button.disabled = true;
+    button.textContent = 'Сохраняю…';
+
+    try {
+      const result = await api('set_donation_link', { link: value });
+      if (!result.success) throw new Error(result.message || 'Не удалось сохранить ссылку');
+      message.textContent = value ? 'Ссылка сохранена. Кнопка доната доступна на главной.' : 'Ссылка удалена. Кнопка доната скрыта.';
+      message.classList.remove('error');
+      message.classList.add('success');
+      toast(value ? 'Ссылка на донат сохранена' : 'Кнопка доната отключена');
+    } catch (error) {
+      message.textContent = error.message || 'Не удалось сохранить ссылку';
+      message.classList.remove('success');
+      message.classList.add('error');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Сохранить ссылку';
+    }
+  });
+
   $('#userAdminClose').addEventListener('click', closeUserModal);
   $('#userAdminModal').addEventListener('click', (event) => {
     if (event.target.id === 'userAdminModal') closeUserModal();
@@ -510,9 +544,10 @@
       const auth = await api('check_auth');
       if (!auth.logged_in || auth.role !== 'admin') return;
 
-      const [usersData, booksData] = await Promise.all([
+      const [usersData, booksData, settingsData] = await Promise.all([
         api('get_all_users'),
-        api('get_books')
+        api('get_books'),
+        api('get_settings')
       ]);
 
       if (!usersData.success || !Array.isArray(usersData.users)) return;
@@ -521,6 +556,8 @@
 
       $('#usersList').replaceChildren(...users.map(card));
       $('#usersCount').textContent = countLabel(users.length);
+      $('#donationLinkInput').value = String(settingsData?.donation_link || '');
+      $('#adminSettings').hidden = false;
       $('#adminUsers').hidden = false;
       updateGiftModeUi();
 

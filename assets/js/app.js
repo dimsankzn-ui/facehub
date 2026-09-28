@@ -34,16 +34,35 @@ if (role) document.body.classList.add('is-authenticated');
     }, {passive:true});
   }
 
+  const donate = document.getElementById('donateLink');
+  if (donate) {
+    fetch('api.php', {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      credentials:'same-origin',
+      body:'action=get_settings'
+    })
+      .then(response => response.ok ? response.json() : null)
+      .then(data => {
+        const href = String(data?.donation_link || '').trim();
+        if (!/^https?:\/\//i.test(href)) return;
+        donate.href = href;
+        donate.hidden = false;
+      })
+      .catch(() => {});
+  }
+
   const spectral = document.getElementById('spectralSource');
   if (!spectral || reduceMotion || typeof spectral.animate !== 'function') return;
 
   const random = (min, max) => min + Math.random() * (max - min);
+  const lerp = (a, b, t) => a + (b - a) * t;
 
   function edgePoint(edge, w, h, sw, sh){
-    if (edge === 0) return {x:-sw * .82, y:random(-sh * .15, h - sh * .25)};
-    if (edge === 1) return {x:w + sw * .10, y:random(-sh * .15, h - sh * .25)};
-    if (edge === 2) return {x:random(-sw * .20, w - sw * .20), y:-sh * .82};
-    return {x:random(-sw * .20, w - sw * .20), y:h + sh * .10};
+    if (edge === 0) return {x:-sw * .78, y:random(-sh * .10, h - sh * .20)};
+    if (edge === 1) return {x:w + sw * .08, y:random(-sh * .10, h - sh * .20)};
+    if (edge === 2) return {x:random(-sw * .15, w - sw * .15), y:-sh * .78};
+    return {x:random(-sw * .15, w - sw * .15), y:h + sh * .08};
   }
 
   function runSpectralPass(){
@@ -59,56 +78,47 @@ if (role) document.body.classList.add('is-authenticated');
 
     const start = edgePoint(startEdge, w, h, sw, sh);
     const end = edgePoint(endEdge, w, h, sw, sh);
-    const midA = {
-      x:random(w * .04 - sw * .20, w * .78),
-      y:random(h * .04 - sh * .20, h * .62)
-    };
-    const midB = {
-      x:random(w * .16 - sw * .20, w * .84),
-      y:random(h * .18 - sh * .20, h * .74)
-    };
-
-    const angleA = random(-28, 28);
-    const angleB = random(-20, 20);
-    const hue = random(-22, 28);
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    const hue = random(-24, 30);
+    const scale = random(.88, 1.10);
     const duration = random(25500, 31500);
+
+    const p1 = {x:lerp(start.x,end.x,.10), y:lerp(start.y,end.y,.10)};
+    const p2 = {x:lerp(start.x,end.x,.88), y:lerp(start.y,end.y,.88)};
 
     const animation = spectral.animate([
       {
-        transform:`translate3d(${start.x}px,${start.y}px,0) rotate(${angleA}deg) scale(.78)`,
+        transform:`translate3d(${start.x}px,${start.y}px,0) rotate(${angle}deg) scale(${scale * .92})`,
         opacity:0,
-        filter:`blur(38px) saturate(145%) hue-rotate(${hue}deg)`
+        filter:`blur(40px) saturate(150%) hue-rotate(${hue}deg)`
       },
       {
-        transform:`translate3d(${start.x * .88 + midA.x * .12}px,${start.y * .88 + midA.y * .12}px,0) rotate(${angleA * .7}deg) scale(.90)`,
-        opacity:.22,
-        offset:.09
-      },
-      {
-        transform:`translate3d(${midA.x}px,${midA.y}px,0) rotate(${angleB}deg) scale(${random(.92,1.13)})`,
-        opacity:.66,
-        filter:`blur(${random(30,38)}px) saturate(${random(145,175)}%) hue-rotate(${hue + random(-10,10)}deg)`,
-        offset:.40
-      },
-      {
-        transform:`translate3d(${midB.x}px,${midB.y}px,0) rotate(${random(-18,18)}deg) scale(${random(.88,1.10)})`,
+        transform:`translate3d(${p1.x}px,${p1.y}px,0) rotate(${angle}deg) scale(${scale})`,
         opacity:.58,
-        offset:.70
+        filter:`blur(36px) saturate(160%) hue-rotate(${hue}deg)`,
+        offset:.10
       },
       {
-        transform:`translate3d(${end.x}px,${end.y}px,0) rotate(${random(-24,24)}deg) scale(.82)`,
+        transform:`translate3d(${p2.x}px,${p2.y}px,0) rotate(${angle}deg) scale(${scale})`,
+        opacity:.58,
+        filter:`blur(36px) saturate(160%) hue-rotate(${hue}deg)`,
+        offset:.88
+      },
+      {
+        transform:`translate3d(${end.x}px,${end.y}px,0) rotate(${angle}deg) scale(${scale * .92})`,
         opacity:0,
-        filter:`blur(42px) saturate(150%) hue-rotate(${hue + random(-12,12)}deg)`
+        filter:`blur(40px) saturate(150%) hue-rotate(${hue}deg)`
       }
     ], {
       duration,
-      easing:'cubic-bezier(.42,0,.18,1)',
+      easing:'linear',
       fill:'forwards'
     });
 
     animation.onfinish = () => {
-      const pause = random(3500, 8500);
-      window.setTimeout(runSpectralPass, pause);
+      window.setTimeout(runSpectralPass, random(3500, 8500));
     };
   }
 
