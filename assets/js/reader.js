@@ -1,4 +1,4 @@
-import '../vendor/foliate/view.js';
+import '../vendor/foliate/view.js?v=20260928-compat2';
 
 const $ = s => document.querySelector(s);
 const params = new URLSearchParams(location.search);
@@ -14,6 +14,9 @@ let saveTimer = 0;
 if (miniMode) {
   document.body.classList.add('mini-reader');
   document.body.dataset.platform = miniPlatform;
+}
+if (miniPlatform === 'max') {
+  globalThis.FOLIATE_USE_SRCDOC = true;
 }
 
 async function api(action,data={},options={}){

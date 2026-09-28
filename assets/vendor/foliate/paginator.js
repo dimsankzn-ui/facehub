@@ -275,11 +275,29 @@ class View {
                 // the resize observer above doesn't work in Firefox
                 // (see https://bugzilla.mozilla.org/show_bug.cgi?id=1832939)
                 // until the bug is fixed we can at least account for font load
-                doc.fonts.ready.then(() => this.expand())
+                if (doc.fonts && doc.fonts.ready) {
+                    doc.fonts.ready.then(() => this.expand())
+                } else {
+                    requestAnimationFrame(() => this.expand())
+                }
 
                 resolve()
             }, { once: true })
-            this.#iframe.src = src
+            if (globalThis.FOLIATE_USE_SRCDOC && src.startsWith('blob:')) {
+                fetch(src)
+                    .then(response => {
+                        if (!response.ok) throw new Error('Could not read chapter blob')
+                        return response.text()
+                    })
+                    .then(html => {
+                        this.#iframe.srcdoc = html
+                    })
+                    .catch(() => {
+                        this.#iframe.src = src
+                    })
+            } else {
+                this.#iframe.src = src
+            }
         })
     }
     render(layout) {
@@ -454,7 +472,6 @@ export class Paginator extends HTMLElement {
         this.#root.innerHTML = `<style>
         :host {
             display: block;
-            container-type: size;
         }
         :host, #top {
             box-sizing: border-box;
@@ -485,18 +502,18 @@ export class Paginator extends HTMLElement {
                 minmax(var(--_margin), 1fr)
                 minmax(0, var(--_max-height))
                 minmax(var(--_margin), 1fr);
-            &.vertical {
+        }
+        #top.vertical {
+            --_max-column-count-spread: var(--_max-column-count-portrait);
+            --_max-width: var(--_max-block-size);
+            --_max-height: calc(var(--_max-inline-size) * var(--_max-column-count-spread));
+        }
+        @media (orientation: portrait) {
+            #top {
                 --_max-column-count-spread: var(--_max-column-count-portrait);
-                --_max-width: var(--_max-block-size);
-                --_max-height: calc(var(--_max-inline-size) * var(--_max-column-count-spread));
             }
-            @container (orientation: portrait) {
-                & {
-                    --_max-column-count-spread: var(--_max-column-count-portrait);
-                }
-                &.vertical {
-                    --_max-column-count-spread: var(--_max-column-count);
-                }
+            #top.vertical {
+                --_max-column-count-spread: var(--_max-column-count);
             }
         }
         #background {
