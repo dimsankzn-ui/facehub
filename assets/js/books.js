@@ -50,6 +50,21 @@ function toast(message) {
   window.__bookToast = setTimeout(() => node.classList.remove('show'), 2200);
 }
 
+function bookSpineWidth(pageCount) {
+  const pages = Math.max(1, Number(pageCount) || 240);
+  return Math.round(Math.min(88, Math.max(34, 28 + pages * 0.11)));
+}
+
+function readableTextColor(hex) {
+  const value = String(hex || '#50657c').replace('#', '');
+  if (!/^[0-9a-fA-F]{6}$/.test(value)) return '#ffffff';
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return luminance > 0.7 ? '#172535' : '#ffffff';
+}
+
 function renderBooks() {
   const row = $('#booksRow');
   const empty = $('#emptyState');
@@ -58,26 +73,47 @@ function renderBooks() {
   empty.classList.toggle('hidden', books.length > 0);
 
   books.forEach((book) => {
-    const item = document.createElement('article');
-    item.className = 'book mist';
-    item.title = book.title;
+    const color = /^#[0-9a-fA-F]{6}$/.test(book.shelf_color || '') ? book.shelf_color : '#50657c';
+    const spineWidth = bookSpineWidth(book.page_count);
+    const textColor = readableTextColor(color);
 
-    if (book.cover) {
-      const art = document.createElement('div');
-      art.className = 'book-art';
-      art.style.backgroundImage = 'url("' + mediaUrl(book.cover) + '")';
-      item.appendChild(art);
-    }
+    const item = document.createElement('article');
+    item.className = 'book';
+    item.title = book.title;
+    item.style.setProperty('--spine-w', spineWidth + 'px');
+    item.style.setProperty('--book-color', color);
+    item.style.setProperty('--book-text', textColor);
+
+    const volume = document.createElement('div');
+    volume.className = 'book-volume';
 
     const spine = document.createElement('div');
     spine.className = 'book-spine';
+
     const title = document.createElement('strong');
     title.className = 'book-title';
     title.textContent = book.title;
-    const year = document.createElement('span');
-    year.className = 'book-year';
-    spine.append(title, year);
-    item.appendChild(spine);
+    spine.appendChild(title);
+
+    const cover = document.createElement('div');
+    cover.className = 'book-cover-face';
+    if (book.cover) {
+      const image = document.createElement('img');
+      image.src = mediaUrl(book.cover);
+      image.alt = 'Обложка книги «' + book.title + '»';
+      image.loading = 'lazy';
+      cover.appendChild(image);
+    } else {
+      const fallback = document.createElement('span');
+      fallback.textContent = book.title;
+      cover.appendChild(fallback);
+    }
+
+    const pages = document.createElement('div');
+    pages.className = 'book-page-edge';
+
+    volume.append(spine, cover, pages);
+    item.appendChild(volume);
 
     if (owner) {
       const controls = document.createElement('div');
@@ -109,6 +145,7 @@ function renderBooks() {
     item.addEventListener('click', () => {
       location.href = 'book.html?id=' + encodeURIComponent(book.id);
     });
+
     row.appendChild(item);
   });
 }
@@ -128,6 +165,9 @@ async function loadBooks() {
 function resetModal() {
   $('#bookForm').reset();
   $('#backgroundInterval').value = '10';
+  $('#bookPages').value = '240';
+  $('#bookColor').value = '#50657c';
+  $('#bookColorText').value = '#50657c';
   $('#coverPreview').style.backgroundImage = '';
   $('#coverPreview').textContent = '＋';
   $('#backgroundPreviewStrip').replaceChildren();
@@ -376,6 +416,9 @@ async function openModal(mode = 'add', id = null) {
 
     editingBook = data.book;
     $('#bookTitle').value = data.book.title || '';
+    $('#bookPages').value = data.book.page_count || 240;
+    $('#bookColor').value = /^#[0-9a-fA-F]{6}$/.test(data.book.shelf_color || '') ? data.book.shelf_color : '#50657c';
+    $('#bookColorText').value = $('#bookColor').value;
     $('#bookDescription').value = data.book.annotation || '';
     $('#backgroundInterval').value = data.book.background_interval || 10;
     $('#ebookPrice').value = data.book.price_ebook || 0;
@@ -466,6 +509,8 @@ $('#bookForm').addEventListener('submit', async (event) => {
     if (editingBook) form.append('book_id', editingBook.id);
 
     form.append('title', title);
+    form.append('page_count', String(Math.max(1, Math.min(5000, Number($('#bookPages').value || 240)))));
+    form.append('shelf_color', /^#[0-9a-fA-F]{6}$/.test($('#bookColor').value) ? $('#bookColor').value : '#50657c');
     form.append('annotation', $('#bookDescription').value.trim());
     form.append('price_ebook', String(Number($('#ebookPrice').value || 0)));
     form.append('price_audio', String(Number($('#audiobookPrice').value || 0)));
@@ -515,6 +560,26 @@ $('#modalClose').addEventListener('click', closeModal);
 $('#modalCancel').addEventListener('click', closeModal);
 $('#bookModal').addEventListener('click', (event) => {
   if (event.target.id === 'bookModal') closeModal();
+});
+
+function normalizeShelfColor(value) {
+  const cleaned = String(value || '').trim();
+  return /^#[0-9a-fA-F]{6}$/.test(cleaned) ? cleaned.toLowerCase() : null;
+}
+
+$('#bookColor').addEventListener('input', () => {
+  $('#bookColorText').value = $('#bookColor').value;
+});
+
+$('#bookColorText').addEventListener('input', () => {
+  const normalized = normalizeShelfColor($('#bookColorText').value);
+  if (normalized) $('#bookColor').value = normalized;
+});
+
+$('#bookColorText').addEventListener('blur', () => {
+  const normalized = normalizeShelfColor($('#bookColorText').value) || $('#bookColor').value || '#50657c';
+  $('#bookColor').value = normalized;
+  $('#bookColorText').value = normalized;
 });
 
 function bindFiles(inputId, outputId, fallback) {

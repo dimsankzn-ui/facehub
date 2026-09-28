@@ -240,7 +240,6 @@ function configureTrailer() {
 
 function enterBackgroundView() {
   if (!backgroundLayers.length) return;
-  clearInterval(backgroundTimer);
   document.body.classList.add('background-view-mode');
   $('#backgroundViewerControls').setAttribute('aria-hidden', 'false');
   $('#viewBackgroundsButton').setAttribute('aria-pressed', 'true');
@@ -252,20 +251,24 @@ function exitBackgroundView() {
   $('#backgroundViewerControls').setAttribute('aria-hidden', 'true');
   $('#viewBackgroundsButton').setAttribute('aria-pressed', 'false');
   $('#viewBackgroundsButton').textContent = '◫';
-  restartBackgroundTimer();
 }
 
 $('#viewBackgroundsButton').addEventListener('click', () => {
   if (document.body.classList.contains('background-view-mode')) exitBackgroundView();
   else enterBackgroundView();
 });
-$('#backgroundPrev').addEventListener('click', () => activateBackground(currentBackground - 1));
-$('#backgroundNext').addEventListener('click', () => activateBackground(currentBackground + 1));
+function stepBackground(delta) {
+  activateBackground(currentBackground + delta);
+  restartBackgroundTimer();
+}
+
+$('#backgroundPrev').addEventListener('click', () => stepBackground(-1));
+$('#backgroundNext').addEventListener('click', () => stepBackground(1));
 document.addEventListener('keydown', (event) => {
   if (!document.body.classList.contains('background-view-mode')) return;
   if (event.key === 'Escape') exitBackgroundView();
-  if (event.key === 'ArrowLeft') activateBackground(currentBackground - 1);
-  if (event.key === 'ArrowRight') activateBackground(currentBackground + 1);
+  if (event.key === 'ArrowLeft') stepBackground(-1);
+  if (event.key === 'ArrowRight') stepBackground(1);
 });
 
 function configureAdmin() {
@@ -305,7 +308,7 @@ function configureAdmin() {
 }
 
 function populateBook() {
-  document.title = book.title + ' — Дим Саныч';
+  document.title = book.title + ' — facehub';
   $('#bookTitleView').textContent = book.title;
   $('#bookDescriptionView').textContent = book.annotation || 'Описание книги появится здесь.';
   $('#readerBookTitle').textContent = book.title;

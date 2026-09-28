@@ -19,13 +19,9 @@
       if (!response.ok) return;
 
       const auth = await response.json();
-      const previousRole = sessionStorage.getItem(ROLE_KEY);
 
       if (!auth.logged_in) {
-        if (previousRole) {
-          clearLocalAuth();
-          location.reload();
-        }
+        clearLocalAuth();
         return;
       }
 
@@ -39,10 +35,8 @@
         link.href = 'portfolio.html';
         if (link.textContent.trim() === 'Личный кабинет') link.textContent = 'Портфолио';
       });
-
-      if (previousRole !== role) location.reload();
     } catch {
-      // При временной недоступности API оставляем страницу доступной как публичную.
+      // При временной недоступности API не разлогиниваем пользователя локально.
     }
   }
 

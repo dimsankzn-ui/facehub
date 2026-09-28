@@ -164,8 +164,8 @@ function render() {
       ? 'публикации'
       : 'публикаций';
   $('#postCount').textContent = count + ' ' + countLabel;
-  $('#feedEmpty').textContent = count === 1 ? 'Других публикаций пока нет.' : 'Публикаций пока нет.';
-  $('#feedEmpty').classList.toggle('show', count <= 1);
+  $('#feedEmpty').textContent = 'Публикаций пока нет.';
+  $('#feedEmpty').classList.toggle('show', count === 0);
 
   const featured = items[0] || null;
   $('#readFeatured').disabled = !featured;
@@ -190,7 +190,7 @@ function render() {
   const list = $('#postList');
   list.replaceChildren();
 
-  items.slice(1).forEach((post) => {
+  items.forEach((post) => {
     const item = document.createElement('article');
     item.className = 'post';
 

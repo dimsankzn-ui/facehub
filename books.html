@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Книги — Дим Саныч</title>
+<title>Книги — facehub</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/books.css?v=20260927-7">
+<link rel="stylesheet" href="assets/css/books.css?v=20260928-7">
 </head>
 <body>
 <div class="books-app">
@@ -17,8 +17,8 @@
 
   <header class="books-header">
     <a class="brand" href="index.html">
-      <span class="logo">ДС</span>
-      <span>Дим Саныч</span>
+      <span class="logo">f</span>
+      <span>facehub</span>
     </a>
 
     <nav class="page-nav" aria-label="Основная навигация">
@@ -94,6 +94,20 @@
             <span>Название</span>
             <input id="bookTitle" type="text" placeholder="Название книги" required>
           </label>
+
+          <div class="shelf-settings full">
+            <label class="field">
+              <span>Количество страниц</span>
+              <input id="bookPages" type="number" min="1" max="5000" step="1" value="240" placeholder="240">
+            </label>
+            <label class="field">
+              <span>Цвет книги на полке</span>
+              <div class="book-color-field">
+                <input id="bookColor" type="color" value="#50657c" aria-label="Цвет книги">
+                <input id="bookColorText" type="text" value="#50657c" maxlength="7" spellcheck="false" aria-label="HEX-код цвета">
+              </div>
+            </label>
+          </div>
 
           <div class="background-settings">
             <div>
@@ -204,8 +218,8 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
-<script src="assets/js/auth-state.js?v=20260927-2" defer></script>
-<script src="assets/js/account-avatar.js?v=20260927-3" defer></script>
-<script src="assets/js/books.js?v=20260927-7" defer></script>
+<script src="assets/js/auth-state.js?v=20260928-6" defer></script>
+<script src="assets/js/account-avatar.js?v=20260928-6" defer></script>
+<script src="assets/js/books.js?v=20260928-6" defer></script>
 </body>
 </html>

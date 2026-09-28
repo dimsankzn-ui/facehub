@@ -160,6 +160,10 @@ function renderSongs() {
   songs.forEach((song, index) => {
     const item = document.createElement('article');
     item.className = 'song';
+    item.dataset.songId = String(song.id);
+    item.tabIndex = 0;
+    item.setAttribute('role', 'button');
+    item.setAttribute('aria-label', 'Открыть карточку песни «' + (song.title || 'Без названия') + '»');
 
     const visual = document.createElement('div');
     visual.className = 'song-index';
@@ -175,7 +179,7 @@ function renderSongs() {
     const title = document.createElement('strong');
     title.textContent = song.title || 'Без названия';
     const meta = document.createElement('span');
-    meta.textContent = [song.genre, song.release_year, song.music_author ? 'Музыка: ' + song.music_author : '']
+    meta.textContent = [song.genre, song.release_year, song.music_author ? 'Музыка: ' + song.music_author : '', Number(song.is_ai) ? 'ИИ' : '']
       .filter(Boolean).join(' · ');
     copy.append(title, meta);
 
@@ -214,6 +218,7 @@ function render() {
   renderAlbums();
   renderSongs();
   refreshSongAlbumSelect();
+  updateSongPlaybackButtons();
 }
 
 async function loadMusicData() {
@@ -401,6 +406,7 @@ function resetSongForm() {
   $('#songCoverPreview').textContent = '＋';
   $('#songCoverName').textContent = 'Квадратное изображение · JPG, PNG, WEBP';
   $('#songAudioName').textContent = 'MP3, WAV, FLAC, AAC, M4A';
+  $('#songAiPerformer').checked = false;
   $('#songAudio').required = true;
   refreshSongAlbumSelect();
 }
@@ -422,6 +428,7 @@ function openSongEditor(id = null, presetAlbumId = null) {
     $('#songGenre').value = song.genre || '';
     $('#songLyricsAuthor').value = song.lyrics_author || '';
     $('#songMusicAuthor').value = song.music_author || '';
+    $('#songAiPerformer').checked = Number(song.is_ai) === 1;
     $('#songLyrics').value = song.lyrics || '';
     refreshSongAlbumSelect(song.album_id ?? '');
 
@@ -569,6 +576,7 @@ $('#songForm').addEventListener('submit', async (event) => {
     form.append('album_id', $('#songAlbum').value);
     form.append('lyrics_author', $('#songLyricsAuthor').value.trim());
     form.append('music_author', $('#songMusicAuthor').value.trim());
+    form.append('is_ai', $('#songAiPerformer').checked ? '1' : '0');
     form.append('lyrics', $('#songLyrics').value.trim());
 
     if ($('#songCover').files?.[0]) form.append('cover', $('#songCover').files[0]);
@@ -609,7 +617,7 @@ async function deleteSong(id) {
     try {
       const result = await api('delete_song', { id });
       if (!result.success) throw new Error();
-      if (Number(playQueue[currentIndex]?.id) === Number(id)) closePlayer();
+      if (Number(playQueue[currentIndex]) === Number(id)) closePlayer();
       await loadMusicData();
       toast('Песня удалена');
     } catch {
@@ -631,6 +639,84 @@ async function deleteAlbum(id) {
       toast('Не удалось удалить альбом');
     }
   }, 'Нажмите удалить ещё раз, чтобы удалить альбом «' + album.title + '»');
+}
+
+function openSongDetails(id) {
+  const song = songById(id);
+  if (!song) return;
+
+  const cover = songCover(song);
+  $('#songDetailCover').textContent = cover ? '' : '♪';
+  $('#songDetailCover').style.backgroundImage = cover ? 'url("' + mediaUrl(cover) + '")' : '';
+  $('#songDetailTitle').textContent = song.title || 'Без названия';
+  $('#songDetailAlbum').textContent = song.album_title || albumTitleById(song.album_id) || 'Без альбома';
+  $('#songDetailLyricsAuthor').textContent = song.lyrics_author || '—';
+  $('#songDetailMusicAuthor').textContent = song.music_author || '—';
+  $('#songDetailGenre').textContent = song.genre || '—';
+  $('#songDetailYear').textContent = song.release_year || '—';
+  $('#songDetailLyrics').textContent = (song.lyrics || '').trim() || 'Текст песни пока не добавлен.';
+
+  const badges = $('#songDetailBadges');
+  badges.replaceChildren();
+
+  if (song.album_id) {
+    const albumBadge = document.createElement('span');
+    albumBadge.textContent = 'Альбом · ' + albumTitleById(song.album_id);
+    badges.appendChild(albumBadge);
+  }
+
+  if (Number(song.is_ai) === 1) {
+    const ai = document.createElement('span');
+    ai.className = 'ai';
+    ai.textContent = 'ИИ';
+    badges.appendChild(ai);
+  }
+
+  if (song.file_path) {
+    const file = document.createElement('span');
+    file.textContent = fileName(song.file_path);
+    badges.appendChild(file);
+  }
+
+  $('#songDetailsPanel').classList.add('show');
+  $('#songDetailsPanel').setAttribute('aria-hidden', 'false');
+  $('#songDetailsScrim').classList.add('show');
+  $('#songDetailsScrim').setAttribute('aria-hidden', 'false');
+}
+
+function closeSongDetails() {
+  $('#songDetailsPanel').classList.remove('show');
+  $('#songDetailsPanel').setAttribute('aria-hidden', 'true');
+  $('#songDetailsScrim').classList.remove('show');
+  $('#songDetailsScrim').setAttribute('aria-hidden', 'true');
+}
+
+$('#songDetailsClose').addEventListener('click', closeSongDetails);
+$('#songDetailsScrim').addEventListener('click', closeSongDetails);
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && $('#songDetailsPanel').classList.contains('show')) closeSongDetails();
+});
+
+function currentSongId() {
+  return currentIndex >= 0 && currentIndex < playQueue.length ? Number(playQueue[currentIndex]) : null;
+}
+
+function updateSongPlaybackButtons() {
+  const activeId = currentSongId();
+  const activelyPlaying = activeId !== null && Boolean(audio.src) && !audio.paused;
+
+  document.querySelectorAll('[data-play-song]').forEach((button) => {
+    const same = Number(button.dataset.playSong) === activeId;
+    const pause = same && activelyPlaying;
+    button.textContent = pause ? 'Ⅱ' : '▶';
+    button.title = pause ? 'Пауза' : 'Воспроизвести';
+    button.setAttribute('aria-label', pause ? 'Пауза' : 'Воспроизвести');
+    button.classList.toggle('is-playing', pause);
+  });
+
+  document.querySelectorAll('.song[data-song-id]').forEach((row) => {
+    row.classList.toggle('is-playing', Number(row.dataset.songId) === activeId);
+  });
 }
 
 document.addEventListener('click', (event) => {
@@ -664,7 +750,14 @@ document.addEventListener('click', (event) => {
       toast('Для прослушивания войдите в аккаунт');
       return;
     }
-    playSongById(Number(playSong), '', songs.map((song) => Number(song.id)));
+
+    const requestedId = Number(playSong);
+    if (currentSongId() === requestedId && audio.src) {
+      if (audio.paused) audio.play().catch(() => {});
+      else audio.pause();
+    } else {
+      playSongById(requestedId, '', songs.map((song) => Number(song.id)));
+    }
     return;
   }
 
@@ -697,7 +790,20 @@ document.addEventListener('click', (event) => {
     document.body.appendChild(link);
     link.click();
     link.remove();
+    return;
   }
+
+  const songRow = event.target.closest('.song[data-song-id]');
+  if (songRow && !event.target.closest('button,a')) {
+    openSongDetails(Number(songRow.dataset.songId));
+  }
+});
+
+document.addEventListener('keydown', (event) => {
+  const row = event.target.closest?.('.song[data-song-id]');
+  if (!row || (event.key !== 'Enter' && event.key !== ' ')) return;
+  event.preventDefault();
+  openSongDetails(Number(row.dataset.songId));
 });
 
 function formatTime(seconds) {
@@ -759,9 +865,11 @@ function loadCurrentAudio() {
   $('#player').setAttribute('aria-hidden', 'false');
   $('#playerToggle').textContent = 'Ⅱ';
   $('#playerToggle').setAttribute('aria-label', 'Пауза');
+  updateSongPlaybackButtons();
   audio.play().catch(() => {
     $('#playerToggle').textContent = '▶';
     $('#playerToggle').setAttribute('aria-label', 'Воспроизвести');
+    updateSongPlaybackButtons();
   });
 }
 
@@ -793,6 +901,7 @@ function closePlayer() {
   $('#player').classList.remove('show');
   $('#player').setAttribute('aria-hidden', 'true');
   setPlayerPosition(0, 0);
+  updateSongPlaybackButtons();
 }
 
 $('#playerToggle').addEventListener('click', () => {
@@ -839,11 +948,13 @@ audio.addEventListener('timeupdate', () => setPlayerPosition(audio.currentTime, 
 audio.addEventListener('play', () => {
   $('#playerToggle').textContent = 'Ⅱ';
   $('#playerToggle').setAttribute('aria-label', 'Пауза');
+  updateSongPlaybackButtons();
 });
 audio.addEventListener('pause', () => {
   if (audio.ended) return;
   $('#playerToggle').textContent = '▶';
   $('#playerToggle').setAttribute('aria-label', 'Воспроизвести');
+  updateSongPlaybackButtons();
 });
 audio.addEventListener('ended', () => {
   if (repeatEnabled) {

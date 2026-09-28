@@ -2,6 +2,23 @@
   const links = [...document.querySelectorAll('a.account-link[href="portfolio.html"]')];
   if (!links.length) return;
 
+  function fallbackIcon() {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+
+    const head = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    head.setAttribute('cx', '12');
+    head.setAttribute('cy', '8');
+    head.setAttribute('r', '3.7');
+
+    const body = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    body.setAttribute('d', 'M4.8 20c.6-4.1 3.1-6.2 7.2-6.2s6.6 2.1 7.2 6.2');
+
+    svg.append(head, body);
+    return svg;
+  }
+
   async function load() {
     try {
       const response = await fetch('api.php', {
@@ -11,43 +28,63 @@
         body: new URLSearchParams({ action: 'check_auth' }).toString()
       });
       if (!response.ok) return;
+
       const auth = await response.json();
       if (!auth.logged_in) return;
 
-      const parts = [auth.first_name, auth.last_name].filter(Boolean);
-      const initials = parts.length
-        ? parts.map((part) => part.trim()[0]).filter(Boolean).slice(0, 2).join('').toUpperCase()
-        : (auth.email || 'П').slice(0, 2).toUpperCase();
-
       links.forEach((link) => {
-        link.textContent = '';
+        link.replaceChildren();
         link.classList.add('profile-link');
+        link.title = 'Портфолио';
+        link.setAttribute('aria-label', 'Открыть портфолио');
 
         const avatar = document.createElement('span');
-        avatar.className = 'account-mini-avatar';
-        avatar.textContent = initials;
+        avatar.className = 'account-profile-avatar';
 
         if (auth.avatar_thumb) {
           const image = document.createElement('img');
           image.alt = '';
           image.src = new URL(auth.avatar_thumb.replace(/^\//, ''), location.origin + '/').href;
-          image.addEventListener('error', () => image.remove());
+          image.addEventListener('error', () => {
+            avatar.replaceChildren(fallbackIcon());
+            avatar.classList.add('fallback');
+          });
           avatar.appendChild(image);
+        } else {
+          avatar.appendChild(fallbackIcon());
+          avatar.classList.add('fallback');
         }
 
-        const label = document.createElement('span');
-        label.textContent = 'Портфолио';
-        link.append(avatar, label);
+        link.appendChild(avatar);
       });
     } catch {
-      // Не мешаем основной навигации.
+      // Публичная навигация остаётся доступной и без ответа API.
     }
   }
 
   if (!document.querySelector('#accountAvatarStyles')) {
     const style = document.createElement('style');
     style.id = 'accountAvatarStyles';
-    style.textContent = '.account-link.profile-link{gap:8px;padding-left:7px}.account-mini-avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,#eef3f8,#d9e4ee);color:#60758c;font-size:9px;font-weight:600;flex:0 0 auto;border:1px solid rgba(255,255,255,.9)}.account-mini-avatar img{width:100%;height:100%;object-fit:cover;display:block}';
+    style.textContent = `
+      .account-link.profile-link{
+        width:46px!important;height:46px!important;min-width:46px!important;
+        padding:2px!important;border-radius:50%!important;
+        display:inline-grid!important;place-items:center!important;
+        overflow:visible!important;font-size:0!important;
+        background:rgba(255,255,255,.48)!important;
+        border:1px solid rgba(255,255,255,.92)!important;
+        box-shadow:0 8px 22px rgba(58,77,99,.10)!important;
+        transition:transform .18s,background .18s!important
+      }
+      .account-link.profile-link:hover{transform:translateY(-1px) scale(1.03);background:rgba(255,255,255,.70)!important}
+      .account-profile-avatar{
+        width:40px;height:40px;border-radius:50%;overflow:hidden;
+        display:grid;place-items:center;background:#e8eef4;
+        box-shadow:inset 0 0 0 1px rgba(75,96,119,.08)
+      }
+      .account-profile-avatar img{width:100%;height:100%;display:block;object-fit:cover}
+      .account-profile-avatar svg{width:23px;height:23px;fill:none;stroke:#718498;stroke-width:1.6;stroke-linecap:round}
+    `;
     document.head.appendChild(style);
   }
 

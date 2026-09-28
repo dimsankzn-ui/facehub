@@ -115,3 +115,39 @@ h1{
 @media(max-width:900px){
   .page-nav{display:none}.hero{grid-template-columns:1fr}.visual{display:none}.section-index{grid-template-columns:1fr 1fr}
 }
+
+/* Главная facehub: смысловой центр — проза. Нижняя дублирующая навигация удалена. */
+.home-main{grid-template-rows:1fr;gap:0;padding-bottom:8px}
+.prose-note{
+  display:inline-flex;flex-direction:column;gap:4px;
+  margin-top:26px;padding:12px 14px;border-radius:14px;
+  border:1px solid rgba(255,255,255,.88);
+  background:rgba(255,255,255,.42);
+  backdrop-filter:blur(18px)
+}
+.prose-note span{font-size:8.5px;text-transform:uppercase;letter-spacing:.11em;color:#92a0ad}
+.prose-note strong{font-size:11px;font-weight:500;color:#526579}
+.manuscript-card{justify-content:space-between}
+.manuscript-top{display:flex;align-items:center;justify-content:space-between;color:#8594a2;font-size:9px;text-transform:uppercase;letter-spacing:.12em}
+.manuscript-top b{font-size:22px;font-weight:250;color:#7c8ea1;letter-spacing:-.04em}
+.manuscript-page{
+  width:78%;height:53%;align-self:center;padding:28px 25px;
+  border-radius:6px 15px 15px 6px;
+  background:linear-gradient(145deg,rgba(255,255,255,.90),rgba(239,244,248,.78));
+  box-shadow:0 18px 40px rgba(54,72,92,.10),inset 9px 0 18px rgba(87,104,123,.045);
+  transform:rotate(-2.2deg)
+}
+.manuscript-page i{
+  display:block;height:2px;margin:0 0 17px;border-radius:99px;
+  background:linear-gradient(90deg,rgba(78,96,116,.36),rgba(78,96,116,.12))
+}
+.manuscript-page i:nth-child(2){width:88%}.manuscript-page i:nth-child(3){width:94%}
+.manuscript-page i:nth-child(4){width:72%}.manuscript-page i:nth-child(5){width:91%}
+.manuscript-page i:nth-child(6){width:82%}.manuscript-page i:nth-child(7){width:55%}
+.prose-visual .glass-mini.one{transform:rotate(7deg)}
+.prose-visual .glass-mini.two{transform:rotate(-6deg)}
+@media(max-height:760px){
+  .prose-note{margin-top:16px;padding:9px 12px}
+  .manuscript-page{padding:20px;height:50%}
+  .manuscript-page i{margin-bottom:12px}
+}
