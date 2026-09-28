@@ -95,42 +95,32 @@ button,input,textarea,select{font:inherit}
 .constellation:before{width:68%;left:13%;top:37%;transform:rotate(8deg)}
 .constellation:after{width:58%;left:27%;top:60%;transform:rotate(-12deg)}
 
-.signal-beacon{
+.spectral-source{
   position:absolute;
   z-index:1;
-  left:-42vw;top:68vh;
-  width:36vw;height:86px;
-  min-width:420px;
-  transform:rotate(-15deg);
-  animation:signalPass 28s cubic-bezier(.42,0,.2,1) infinite;
-  opacity:0;
+  left:0;top:0;
+  width:34vw;height:22vw;
+  min-width:360px;min-height:230px;
+  max-width:660px;max-height:430px;
+  opacity:0;pointer-events:none;border-radius:50%;
+  filter:blur(34px) saturate(145%);
+  mix-blend-mode:screen;
+  will-change:transform,opacity,filter;
+  background:
+    radial-gradient(circle at 28% 42%,rgba(50,221,205,.72),transparent 31%),
+    radial-gradient(circle at 47% 35%,rgba(67,137,255,.78),transparent 32%),
+    radial-gradient(circle at 65% 48%,rgba(154,86,239,.72),transparent 34%),
+    radial-gradient(circle at 78% 57%,rgba(255,80,170,.63),transparent 30%),
+    radial-gradient(circle at 58% 72%,rgba(255,176,66,.52),transparent 33%);
 }
-.signal-core{
-  position:absolute;inset:19px 0 19px 0;border-radius:999px;
-  background:linear-gradient(90deg,
-    rgba(45,211,188,0),
-    rgba(45,211,188,.62) 17%,
-    rgba(55,135,255,.78) 36%,
-    rgba(152,83,238,.72) 54%,
-    rgba(255,72,158,.68) 70%,
-    rgba(255,166,54,.60) 84%,
-    rgba(255,166,54,0));
-  filter:blur(2px);
-  box-shadow:0 0 42px rgba(107,126,240,.25),0 0 78px rgba(246,87,161,.18);
+.spectral-source:before{
+  content:"";position:absolute;inset:15% 8%;border-radius:50%;
+  background:conic-gradient(from 40deg,rgba(45,212,191,.18),rgba(73,132,255,.30),rgba(167,85,240,.25),rgba(255,83,165,.24),rgba(255,178,66,.18),rgba(45,212,191,.18));
+  filter:blur(30px);opacity:.78;
 }
-.signal-flare{position:absolute;display:block;border-radius:999px;filter:blur(7px);opacity:.65}
-.signal-flare.one{left:10%;top:3px;width:42%;height:18px;background:linear-gradient(90deg,transparent,rgba(71,211,235,.54),rgba(132,98,239,.44),transparent)}
-.signal-flare.two{left:38%;bottom:2px;width:34%;height:14px;background:linear-gradient(90deg,transparent,rgba(235,79,179,.55),rgba(255,178,60,.46),transparent)}
-.signal-flare.three{right:7%;top:27px;width:18%;height:9px;background:rgba(255,255,255,.72);box-shadow:0 0 28px rgba(255,255,255,.7)}
-.signal-beacon:before,.signal-beacon:after{content:"";position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.90),rgba(105,169,255,.34) 35%,transparent 72%)}
-.signal-beacon:before{width:42px;height:42px;right:11%;top:22px}
-.signal-beacon:after{width:20px;height:20px;left:34%;top:8px}
-@keyframes signalPass{
-  0%,18%{transform:translate3d(0,0,0) rotate(-15deg) scaleX(.86);opacity:0}
-  22%{opacity:.72}
-  47%{transform:translate3d(92vw,-44vh,0) rotate(-7deg) scaleX(1.10);opacity:.82}
-  69%{transform:translate3d(154vw,-68vh,0) rotate(7deg) scaleX(.92);opacity:.55}
-  73%,100%{transform:translate3d(178vw,-76vh,0) rotate(11deg) scaleX(.84);opacity:0}
+.spectral-source:after{
+  content:"";position:absolute;left:22%;top:31%;width:56%;height:34%;border-radius:50%;
+  background:rgba(255,255,255,.19);filter:blur(30px);
 }
 @keyframes orbA{to{transform:translate3d(8vw,5vh,0) rotate(22deg) scale(1.08);border-radius:60% 40% 44% 56%/58% 42% 60% 40%}}
 @keyframes orbB{to{transform:translate3d(-7vw,10vh,0) rotate(-25deg) scale(.92)}}
@@ -173,29 +163,36 @@ button,input,textarea,select{font:inherit}
 .hub-stage{position:relative;width:100%;height:100%;min-height:0;perspective:1200px}
 .glass-panel{
   position:relative;
-  border:1px solid rgba(255,255,255,.82);
+  border:1px solid rgba(255,255,255,.54);
   background:
-    linear-gradient(145deg,rgba(255,255,255,.42),rgba(255,255,255,.17) 60%,rgba(223,235,247,.22)),
-    radial-gradient(circle at 18% 0%,rgba(255,255,255,.58),transparent 34%);
-  backdrop-filter:blur(30px) saturate(165%) contrast(103%);
-  -webkit-backdrop-filter:blur(30px) saturate(165%) contrast(103%);
+    linear-gradient(145deg,rgba(255,255,255,.15),rgba(255,255,255,.045) 58%,rgba(210,229,244,.065)),
+    radial-gradient(circle at 20% 0%,rgba(255,255,255,.22),transparent 35%);
+  backdrop-filter:blur(15px) saturate(175%) brightness(1.035);
+  -webkit-backdrop-filter:blur(15px) saturate(175%) brightness(1.035);
   box-shadow:
-    0 28px 76px rgba(40,58,84,.15),
-    inset 0 1px 0 rgba(255,255,255,.96),
-    inset 0 -1px 0 rgba(126,154,181,.09),
-    inset 18px 0 40px rgba(255,255,255,.05);
+    0 26px 68px rgba(40,58,84,.11),
+    inset 0 1px 0 rgba(255,255,255,.68),
+    inset 0 -1px 0 rgba(115,145,175,.07);
 }
 .glass-panel:before{
-  content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;
+  content:"";
+  position:absolute;inset:-1px;padding:7px;border-radius:inherit;pointer-events:none;
   background:
-    linear-gradient(125deg,rgba(255,255,255,.45),transparent 18%,transparent 74%,rgba(130,188,236,.12)),
-    radial-gradient(circle at 92% 88%,rgba(202,93,211,.10),transparent 28%);
-  mix-blend-mode:screen;
+    linear-gradient(135deg,rgba(255,255,255,.52),rgba(75,174,236,.14) 30%,rgba(199,77,222,.13) 67%,rgba(255,255,255,.38)),
+    radial-gradient(circle at 12% 8%,rgba(255,255,255,.30),transparent 27%);
+  backdrop-filter:blur(10px) saturate(225%) contrast(110%) brightness(1.08);
+  -webkit-backdrop-filter:blur(10px) saturate(225%) contrast(110%) brightness(1.08);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor;
+  mask-composite:exclude;
+  opacity:.94;
 }
 .glass-panel:after{
-  content:"";position:absolute;left:8%;right:8%;top:0;height:1px;border-radius:999px;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.98),transparent);
-  opacity:.78;pointer-events:none;
+  content:"";position:absolute;inset:1px;border-radius:inherit;pointer-events:none;
+  background:
+    linear-gradient(110deg,rgba(255,255,255,.16),transparent 17%,transparent 78%,rgba(79,176,238,.055)),
+    radial-gradient(circle at 92% 88%,rgba(214,91,218,.055),transparent 26%);
+  mix-blend-mode:screen;
 }
 
 .hero-panel{
@@ -271,7 +268,7 @@ button,input,textarea,select{font:inherit}
 .about-kicker{display:flex;align-items:center;gap:9px;font-size:10px;text-transform:uppercase;letter-spacing:.10em;color:#728495}
 .about-card h1{font-size:clamp(46px,6vw,78px);line-height:.96;letter-spacing:-.06em;font-weight:230;margin:28px 0 18px}
 .about-card p{max-width:520px;color:#627383;font-size:15px;line-height:1.6;margin:0 0 26px}
-.about-signal{animation-delay:-9s}
+.about-signal{filter:blur(38px) saturate(150%)}
 
 @media(max-height:780px){
   .home-app{padding-top:12px}
@@ -308,7 +305,7 @@ button,input,textarea,select{font:inherit}
   .hub-tile .tile-icon{width:34px;height:34px;border-radius:11px;font-size:13px}
   .hub-tile strong{font-size:13px}.hub-tile small{font-size:6.5px;margin:2px 0}.hub-tile>span{font-size:8px;line-height:1.32}
   .tile-portfolio{display:none}.live-note{display:none}
-  .signal-beacon{width:70vw;min-width:320px;height:62px}
+  .spectral-source{width:72vw;height:46vw;min-width:300px;min-height:190px}
   .constellation{width:42vw;height:20vh;right:1vw}
 }
 @media(max-width:520px){
@@ -327,6 +324,6 @@ button,input,textarea,select{font:inherit}
   .hub-tile{min-height:0;padding:10px}
 }
 @media(prefers-reduced-motion:reduce){
-  .orb,.color-island,.orbit,.light-sweep,.signal-beacon,.status-dot,.live-wave i{animation:none!important}
-  .signal-beacon{display:none}
+  .orb,.color-island,.orbit,.light-sweep,.status-dot,.live-wave i{animation:none!important}
+  .spectral-source{display:none}
 }
