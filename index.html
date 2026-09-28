@@ -3,16 +3,21 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>facehub — авторское пространство</title>
+<title>facehub — личное пространство</title>
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="assets/css/styles.css?v=20260928-6">
+<link rel="stylesheet" href="assets/css/styles.css?v=20260928-7">
 </head>
 <body>
-<div class="home-app">
+<div class="home-app" id="homeApp">
   <div class="ambient" aria-hidden="true">
-    <div class="ring ring-left"></div>
-    <div class="glow"></div>
-    <div class="arc"></div>
+    <div class="ambient-grid"></div>
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="orb orb-c"></div>
+    <div class="orbit orbit-one"></div>
+    <div class="orbit orbit-two"></div>
+    <div class="light-sweep"></div>
+    <div class="grain"></div>
   </div>
 
   <header class="index-header">
@@ -33,37 +38,88 @@
   </header>
 
   <main class="home-main">
-    <section class="hero">
-      <div class="home-copy">
-        <div class="eyebrow"><i></i> авторское пространство</div>
-        <h1>Проза, миры<br>и истории.</h1>
-        <p class="lead">В центре facehub — книги и проза: романы, персонажи, миры и заметки о них. Музыка и стихи остаются частью этого пространства, но продолжают истории, а не заменяют их.</p>
-        <div class="prose-note">
-          <span>Основное направление</span>
-          <strong>Проза · книги · авторские миры</strong>
+    <section class="hub-stage" aria-label="Личное пространство">
+      <article class="hero-panel glass-panel">
+        <div class="hero-topline">
+          <span class="status-dot"></span>
+          <span>личный цифровой хаб</span>
         </div>
-      </div>
 
-      <div class="visual prose-visual" aria-hidden="true">
-        <div class="glass-main manuscript-card">
-          <div class="manuscript-top"><span>рукопись</span><b>01</b></div>
-          <div class="manuscript-page">
-            <i></i><i></i><i></i><i></i><i></i><i></i><i></i>
-          </div>
-          <div>
-            <div class="feature-title">Истории остаются дольше звука.</div>
-            <div class="feature-sub">Книги · блог · заметки · музыка · стихи</div>
-          </div>
+        <div class="hero-copy">
+          <h1>Пространство, где собирается моя история.</h1>
+          <p>Книги, мысли, стихи, музыка, заметки и цифровые следы того, что для меня важно.</p>
         </div>
-        <div class="glass-mini one"><div class="symbol">¶</div></div>
-        <div class="glass-mini two"><div class="symbol">✦</div></div>
+
+        <div class="hero-actions">
+          <a class="button primary" href="blog.html">Последние записи</a>
+          <a class="button soft" href="portfolio.html">Обо мне</a>
+        </div>
+
+        <div class="hero-meta" aria-label="Темы хаба">
+          <span>мысли</span>
+          <span>истории</span>
+          <span>музыка</span>
+          <span>тексты</span>
+          <span>архив</span>
+        </div>
+      </article>
+
+      <a class="hub-tile tile-books glass-panel" href="books.html">
+        <div class="tile-icon">Aa</div>
+        <div>
+          <small>читать</small>
+          <strong>Книги</strong>
+        </div>
+        <span>Истории, которые хочется сохранить.</span>
+      </a>
+
+      <a class="hub-tile tile-music glass-panel" href="music.html">
+        <div class="tile-icon music-bars"><i></i><i></i><i></i><i></i></div>
+        <div>
+          <small>слушать</small>
+          <strong>Музыка</strong>
+        </div>
+        <span>Звук, настроение и песни.</span>
+      </a>
+
+      <a class="hub-tile tile-poetry glass-panel" href="poetry.html">
+        <div class="tile-icon">✦</div>
+        <div>
+          <small>чувствовать</small>
+          <strong>Стихи</strong>
+        </div>
+        <span>Короткие формы и точные состояния.</span>
+      </a>
+
+      <a class="hub-tile tile-blog glass-panel" href="blog.html">
+        <div class="tile-icon">◌</div>
+        <div>
+          <small>записывать</small>
+          <strong>Блог</strong>
+        </div>
+        <span>Мысли, события и наблюдения.</span>
+      </a>
+
+      <a class="hub-tile tile-portfolio glass-panel" href="portfolio.html">
+        <div class="tile-icon">↗</div>
+        <div>
+          <small>собирать</small>
+          <strong>Портфолио</strong>
+        </div>
+        <span>Проекты, опыт и мой цифровой след.</span>
+      </a>
+
+      <div class="live-note glass-panel" aria-hidden="true">
+        <div class="live-wave"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <span>пространство живёт</span>
       </div>
     </section>
   </main>
 </div>
+
 <script src="assets/js/auth-state.js?v=20260928-6" defer></script>
 <script src="assets/js/account-avatar.js?v=20260928-6" defer></script>
-<script src="assets/js/app.js" defer></script>
+<script src="assets/js/app.js?v=20260928-2" defer></script>
 <script src="assets/js/mini-context.js?v=20260928-1" defer></script>
 </body>
 </html>
