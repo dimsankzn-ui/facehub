@@ -101,3 +101,6 @@ body.is-owner .edit-badge{display:block}
 @media(max-width:900px){
   .page-nav{display:none}.archive{grid-template-columns:92px 1fr}.poems-panel{display:none}.search{width:230px}
 }
+
+.modal-actions-spacer{flex:1}
+.action.danger{background:#f3e9ea;color:#956168}

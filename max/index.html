@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>facehub · MAX</title>
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../mini/style.css?v=20260928-1">
+<script>
+window.FACEHUB_MINI={platform:"max",label:"MAX",api:"max_api.php",sdk:"https://st.max.ru/js/max-web-app.js",hashKey:"WebAppData"};
+</script>
+<script src="../mini/app.js?v=20260928-1" defer></script>
+</head>
+<body>
+<div class="mini-shell">
+<div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+
+<section class="mini-screen active" id="loadingScreen">
+  <div class="loading-mark">f</div><strong>facehub</strong><span id="loadingStatus">Подключаю аккаунт…</span>
+</section>
+
+<section class="mini-screen" id="bindingScreen">
+  <div class="mini-brand"><span class="brand-mark">f</span><b>facehub</b></div>
+  <div class="binding-card">
+    <div class="eyebrow">Первая синхронизация</div>
+    <h1>Привязать MAX</h1>
+    <p id="bindingText">Свяжите MAX с существующим аккаунтом facehub.</p>
+    <form id="loginForm">
+      <label><span>Email</span><input id="email" type="email" autocomplete="email" required></label>
+      <label><span>Пароль</span><input id="password" type="password" autocomplete="current-password" required></label>
+      <button id="loginButton" type="submit">Привязать аккаунт</button>
+    </form>
+    <button class="soft-action hidden" id="currentSessionButton" type="button">Использовать текущую сессию</button>
+    <div class="mini-error" id="bindingError"></div>
+    <div class="compat-note" id="compatNote"></div>
+  </div>
+</section>
+
+<section class="mini-screen" id="homeScreen">
+  <header class="mini-header">
+    <div class="mini-brand"><span class="brand-mark">f</span><b>facehub</b></div>
+    <div class="mini-user"><div><strong id="userName">Профиль</strong><span id="platformState">MAX</span></div><img id="userAvatar" alt=""></div>
+  </header>
+
+  <main class="mini-home">
+    <div class="mini-intro">
+      <div class="eyebrow">Авторское пространство</div>
+      <h1>Проза, музыка<br>и тексты.</h1>
+      <p>Все разделы facehub доступны прямо внутри MAX.</p>
+    </div>
+
+    <nav class="section-grid" id="sectionGrid">
+      <a data-target="../books.html"><span>01</span><b>Книги</b><small>проза и материалы</small></a>
+      <a data-target="../blog.html"><span>02</span><b>Блог</b><small>публикации и заметки</small></a>
+      <a data-target="../poetry.html"><span>03</span><b>Стихи</b><small>архив текстов</small></a>
+      <a data-target="../music.html"><span>04</span><b>Музыка</b><small>песни и альбомы</small></a>
+      <a data-target="../portfolio.html"><span>05</span><b>Портфолио</b><small>профиль и доступы</small></a>
+    </nav>
+
+    <section class="admin-panel hidden" id="adminPanel">
+      <div class="admin-head"><div><span>Администратор</span><h2>Быстрые действия</h2></div><i>только для вас</i></div>
+      <div class="admin-grid">
+        <a data-target="../blog.html?new=1">+ Новый пост</a>
+        <a data-target="../poetry.html?new=1">+ Новый стих</a>
+        <a data-target="../books.html?add=1">+ Новая книга</a>
+        <a data-target="../music.html?add=song">+ Новая песня</a>
+        <a data-target="../music.html?add=album">+ Новый альбом</a>
+        <a data-target="../portfolio.html?admin=users">Пользователи</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="mini-footer">
+    <span id="runtimeInfo">MAX Mini App</span>
+    <button id="unbindButton" type="button">Отвязать MAX</button>
+  </footer>
+</section>
+</div>
+</body>
+</html>

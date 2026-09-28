@@ -801,6 +801,10 @@ async function init() {
     render();
     toast('Не удалось загрузить блог');
   }
+
+  if (isOwner() && new URLSearchParams(location.search).get('new') === '1') {
+    openEditor();
+  }
 }
 
 init();

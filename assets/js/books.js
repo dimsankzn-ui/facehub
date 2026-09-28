@@ -653,8 +653,10 @@ async function init() {
   document.body.classList.toggle('is-owner', owner);
   await loadBooks();
 
-  const editId = new URLSearchParams(location.search).get('edit');
-  if (owner && editId) openModal('edit', editId);
+  const params = new URLSearchParams(location.search);
+  const editId = params.get('edit');
+  if (owner && params.get('add') === '1') openModal('add');
+  else if (owner && editId) openModal('edit', editId);
 }
 
 init();

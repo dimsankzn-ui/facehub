@@ -523,6 +523,10 @@
       $('#usersCount').textContent = countLabel(users.length);
       $('#adminUsers').hidden = false;
       updateGiftModeUi();
+
+      if (new URLSearchParams(location.search).get('admin') === 'users') {
+        setTimeout(() => $('#adminUsers').scrollIntoView({ behavior: 'smooth', block: 'start' }), 80);
+      }
     } catch {
       // Административный блок остаётся скрытым при недоступности API.
     }

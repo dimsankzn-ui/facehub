@@ -984,6 +984,12 @@ async function init() {
     render();
     toast('Не удалось загрузить музыкальный архив');
   }
+
+  if (isOwner()) {
+    const addMode = new URLSearchParams(location.search).get('add');
+    if (addMode === 'song') openSongEditor();
+    if (addMode === 'album') openAlbumEditor();
+  }
 }
 
 init();
