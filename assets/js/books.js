@@ -165,7 +165,7 @@ async function loadBooks() {
 function resetModal() {
   $('#bookForm').reset();
   $('#backgroundInterval').value = '10';
-  $('#bookPages').value = '240';
+  $('#bookPages').value = '';
   $('#bookColor').value = '#50657c';
   $('#bookColorText').value = '#50657c';
   $('#coverPreview').style.backgroundImage = '';
@@ -416,7 +416,7 @@ async function openModal(mode = 'add', id = null) {
 
     editingBook = data.book;
     $('#bookTitle').value = data.book.title || '';
-    $('#bookPages').value = data.book.page_count || 240;
+    $('#bookPages').value = data.book.page_count || '';
     $('#bookColor').value = /^#[0-9a-fA-F]{6}$/.test(data.book.shelf_color || '') ? data.book.shelf_color : '#50657c';
     $('#bookColorText').value = $('#bookColor').value;
     $('#bookDescription').value = data.book.annotation || '';
@@ -500,6 +500,13 @@ $('#bookForm').addEventListener('submit', async (event) => {
   const title = $('#bookTitle').value.trim();
   if (!title) return;
 
+  const pageCount = Number($('#bookPages').value);
+  if (!Number.isInteger(pageCount) || pageCount < 1 || pageCount > 5000) {
+    showFormMessage('Укажите количество страниц от 1 до 5000.', true);
+    $('#bookPages').focus();
+    return;
+  }
+
   const button = $('#bookForm button[type="submit"]');
   button.disabled = true;
 
@@ -509,7 +516,7 @@ $('#bookForm').addEventListener('submit', async (event) => {
     if (editingBook) form.append('book_id', editingBook.id);
 
     form.append('title', title);
-    form.append('page_count', String(Math.max(1, Math.min(5000, Number($('#bookPages').value || 240)))));
+    form.append('page_count', String(pageCount));
     form.append('shelf_color', /^#[0-9a-fA-F]{6}$/.test($('#bookColor').value) ? $('#bookColor').value : '#50657c');
     form.append('annotation', $('#bookDescription').value.trim());
     form.append('price_ebook', String(Number($('#ebookPrice').value || 0)));
